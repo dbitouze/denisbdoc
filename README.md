@@ -1,0 +1,20 @@
+-----------------------------------------------------------------------
+
+- `denisbdoc` --- A personal package for documenting classes and packages, v. 0.3
+- E-mail: `denis.bitouze@lmpa.univ-littoral.fr`
+- Released under the LaTeX Project Public License v1.3c or later. See
+  http://www.latex-project.org/lppl.txt
+
+-----------------------------------------------------------------------
+
+**The (quick 'n dirty) `denisbdoc` package is just for documenting the classes
+I've written.**
+
+The class is supplied in `.dtx` format. If you want to unpack the `.dtx`
+yourself, running:
+
+     tex denisbdoc.dtx
+
+will extract the package.
+
+This package is currently not documented.
