@@ -65,9 +65,6 @@
 \RequirePackage{csquotes}%
 \RequirePackage{tikz}%
 \RequirePackage[xindy]{imakeidx}
-\let\oldmaketitle\maketitle
-\RequirePackage{doc}
-\let\maketitle\oldmaketitle
 \let\EUR\relax
 \@ifpackageloaded{tcolorbox}{%
 }{%
@@ -131,7 +128,7 @@
   {
     \lstMakeShortInline[style=dbtex]|
   }{
-    \lstMakeShortInline[style=dbtex]^^c3^^97
+    \lstMakeShortInline[style=dbtex]×
   }
 \fi
 \tcbuselibrary{%
@@ -215,7 +212,7 @@
 }%
 \lstdefinelanguage[glossaries]{TeX}[LaTeX]{TeX}%
 {%
-  % S^^c3^^a9quences de contr^^c3^^b4les (commun^^c3^^a9ment appel^^c3^^a9es commandes ou macros)
+  % Séquences de contrôles (communément appelées commandes ou macros)
   moretexcs={%
     makeglossaries,printglossaries,printglossary,newglossaryentry,gls,Gls,GLS,glspl,Glspl,GLSpl,newacronym,%
     glsuseri,glsuserii,glsuseriii,glsuseriv,glsuserv,glsuservi,glsshortpluralkey,glslongpluralkey,loadglsentries,%
@@ -226,13 +223,13 @@
   % Environments' names
   morekeywords={%
   },%
-  % Mots-cl^^c3^^a9s de niveau 2 : arguments obligatoires et environnements
+  % Mots-clés de niveau 2 : arguments obligatoires et environnements
   morekeywords=[2]{%
     first,firstplural,plural,sort,nonumberlist,name,acronym,acronyms,symbols,%
     user1,user2,user3,user4,user5,user6,hyper,style,xindy,toc,%
     useri,userii,useriii,useriv,userv,uservi%
   },%
-  % Mots-cl^^c3^^a9s de niveau 3 : arguments optionnels valeurs de cl^^c3^^a9s dans cl^^c3^^a9=valeur
+  % Mots-clés de niveau 3 : arguments optionnels valeurs de clés dans clé=valeur
   morekeywords=[3]{%
     listgroup,listhypergroup,%
     % textrm,textit,textsf,textsl,texttt,textup,textbf,textsc,textmd,emph,%
@@ -242,12 +239,12 @@
 }[keywords,tex,comments]%
 \lstdefinelanguage[biblatex]{TeX}[LaTeX]{TeX}%
 {%
-  % S^^c3^^a9quences de contr^^c3^^b4les (commun^^c3^^a9ment appel^^c3^^a9es commandes ou macros)
+  % Séquences de contrôles (communément appelées commandes ou macros)
   moretexcs={%
     printbibliography,SetCiteCommand,autocite,addbibresource,fullcite,%
     textcite,cite,citeauthor%
   },%
-  % Mots-cl^^c3^^a9s de niveau 1 : arguments optionnels
+  % Mots-clés de niveau 1 : arguments optionnels
   morekeywords={%
     abstract,addendum,afterword,annotation,annotator,author,authortype,%
     bookauthor,bookpagination,booksubtitle,booktitle,booktitleaddon,%
@@ -270,12 +267,12 @@
     backend,style,citestyle,bibstyle,sorting,maxnames,minnames,maxitems,minitems,%
     backref,abbreviate,firstinits,prenote,postnote,useprefix%
   },%
-  % Mots-cl^^c3^^a9s de niveau 2 : arguments obligatoires et environnements
+  % Mots-clés de niveau 2 : arguments obligatoires et environnements
   morekeywords=[2]{%
     % title,
     heading%
   },%
-  % Mots-cl^^c3^^a9s de niveau 3 : arguments optionnels valeurs de cl^^c3^^a9s dans cl^^c3^^a9=valeur
+  % Mots-clés de niveau 3 : arguments optionnels valeurs de clés dans clé=valeur
   morekeywords=[3]{%
     bibintoc,skipbib%
   },%
@@ -283,40 +280,40 @@
 }[keywords,tex,comments]%
 \lstdefinelanguage[csquotes]{TeX}[LaTeX]{TeX}%
 {%
-  % S^^c3^^a9quences de contr^^c3^^b4les (commun^^c3^^a9ment appel^^c3^^a9es commandes ou macros)
+  % Séquences de contrôles (communément appelées commandes ou macros)
   moretexcs={%
     enquote,textelp,textins,blockcquote%
   },%
-  % Mots-cl^^c3^^a9s de niveau 1 : arguments optionnels
+  % Mots-clés de niveau 1 : arguments optionnels
   morekeywords={%
   },%
-  % Mots-cl^^c3^^a9s de niveau 2 : arguments obligatoires et environnements
+  % Mots-clés de niveau 2 : arguments obligatoires et environnements
   morekeywords=[2]{%
     % title,
   },%
-  % Mots-cl^^c3^^a9s de niveau 3 : arguments optionnels valeurs de cl^^c3^^a9s dans cl^^c3^^a9=valeur
+  % Mots-clés de niveau 3 : arguments optionnels valeurs de clés dans clé=valeur
   morekeywords=[3]{%
     skipbib%
   },%
-  % Mots-cl^^c3^^a9s de niveau 4 : arguments optionnels valeurs de cl^^c3^^a9s dans cl^^c3^^a9=valeur
+  % Mots-clés de niveau 4 : arguments optionnels valeurs de clés dans clé=valeur
   morekeywords=[4]{%
   },%
   sensitive%
 }[keywords,tex,comments]%
 \lstdefinelanguage[tcolorbox]{TeX}[LaTeX]{TeX}%
 {%
-  % S^^c3^^a9quences de contr^^c3^^b4les (commun^^c3^^a9ment appel^^c3^^a9es commandes ou macros)
+  % Séquences de contrôles (communément appelées commandes ou macros)
   moretexcs={%
     tcbset,tcbuselibrary%
   },%
-  % Mots-cl^^c3^^a9s de niveau 1 : arguments optionnels
+  % Mots-clés de niveau 1 : arguments optionnels
   morekeywords={%
   },%
-  % Mots-cl^^c3^^a9s de niveau 2 : arguments obligatoires et environnements
+  % Mots-clés de niveau 2 : arguments obligatoires et environnements
   morekeywords=[2]{%
     colback,beamer,skins,listing,only,options,and,text%
   },%
-  % Mots-cl^^c3^^a9s de niveau 3 : arguments optionnels valeurs de cl^^c3^^a9s dans cl^^c3^^a9=valeur
+  % Mots-clés de niveau 3 : arguments optionnels valeurs de clés dans clé=valeur
   morekeywords=[3]{%
     lightgray,red!50!white%
   },%
@@ -324,7 +321,7 @@
 }[keywords,tex,comments]%
 \lstdefinelanguage[listings]{TeX}[LaTeX]{TeX}%
 {%
-  % S^^c3^^a9quences de contr^^c3^^b4les (commun^^c3^^a9ment appel^^c3^^a9es commandes ou macros)
+  % Séquences de contrôles (communément appelées commandes ou macros)
   moretexcs={%
     lstset,lstinline,lstinputlisting,lstMakeShortInline,lstDeleteShortInline,lstdefinestyle%
   },%
@@ -351,19 +348,19 @@
 }[keywords,tex,comments]%
 \lstdefinelanguage[xcolor]{TeX}[LaTeX]{TeX}%
 {%
-  % S^^c3^^a9quences de contr^^c3^^b4les (commun^^c3^^a9ment appel^^c3^^a9es commandes ou macros)
+  % Séquences de contrôles (communément appelées commandes ou macros)
   moretexcs={%
     textcolor,fcolorbox,colorbox,color,rowcolors,arrayrulecolor,rownum%
   },%
-  % Mots-cl^^c3^^a9s de niveau 1 : arguments optionnels
+  % Mots-clés de niveau 1 : arguments optionnels
   morekeywords={%
     %
   },%
-  % Mots-cl^^c3^^a9s de niveau 2 : arguments obligatoires et environnements
+  % Mots-clés de niveau 2 : arguments obligatoires et environnements
   morekeywords=[2]{%
     lightgray,red,blue,brown,purple,magenta,green,black,cyan,yellow,%
   },%
-  % Mots-cl^^c3^^a9s de niveau 3 : arguments optionnels valeurs de cl^^c3^^a9s dans cl^^c3^^a9=valeur
+  % Mots-clés de niveau 3 : arguments optionnels valeurs de clés dans clé=valeur
   morekeywords=[3]{%
     %
   },%
@@ -371,15 +368,15 @@
 }[keywords,tex,comments]%
 \lstdefinelanguage[hyperref]{TeX}[LaTeX]{TeX}%
 {%
-  % S^^c3^^a9quences de contr^^c3^^b4les (commun^^c3^^a9ment appel^^c3^^a9es commandes ou macros)
+  % Séquences de contrôles (communément appelées commandes ou macros)
   moretexcs={%
     href,url,hypersetup,hypertarget,hyperlink,pdfstringdefDisableCommands,texorpdfstring%
   },%
-  % Mots-cl^^c3^^a9s de niveau 1 : arguments optionnels
+  % Mots-clés de niveau 1 : arguments optionnels
   morekeywords={%
     %
   },%
-  % Mots-cl^^c3^^a9s de niveau 2 : arguments obligatoires et environnements
+  % Mots-clés de niveau 2 : arguments obligatoires et environnements
   morekeywords=[2]{%
     breaklinks,colorlinks,bookmarks,pdfborderstyle,pdfborder,all%
   },%
@@ -585,7 +582,7 @@
   /tcb/doclang/color=~(couleur),
   /tcb/doclang/colors=Couleurs,
   /tcb/doclang/environments=Environnements,
-  /tcb/doclang/keys=Cl^^c3^^a9s,
+  /tcb/doclang/keys=Clés,
   /tcb/doclang/values=Valeurs,
   /tcb/doclang/pageshort=p.,
   /tcb/documentation~listing~style=dbtex,
@@ -718,7 +715,7 @@
 }
 \NewDocumentCommand{\Folder}{ m }
 {%
-  \IfLanguageName{french}{r^^c3^^a9pertoire~}{}%
+  \IfLanguageName{french}{répertoire~}{}%
   \__denisbdoc_file:n {#1}%
   \IfLanguageName{english}{~directory}{}%
 }%
@@ -1058,7 +1055,7 @@
 }
 \NewDocumentCommand \gztauthorcl { }
 {%
-  \Class{\textsl{\texttt{\c__denisbdoc_gztauthor_class_name_tl}}}
+  \Class{\gztauthor}
 }
 \tl_const:Nn \c__denisbdoc_nwejm_class_name_tl {nwejm}
 \tl_const:Nn \c__denisbdoc_nwejmauthor_class_name_tl {nwejmart}
