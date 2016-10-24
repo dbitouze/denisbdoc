@@ -1,11 +1,5 @@
------------------------------------------------------------------------
-
-- `denisbdoc` --- A personal package for documenting classes and packages, v. 0.3
-- E-mail: `denis.bitouze@lmpa.univ-littoral.fr`
-- Released under the LaTeX Project Public License v1.3c or later. See
-  http://www.latex-project.org/lppl.txt
-
------------------------------------------------------------------------
+denisbdoc - A personal package for documenting classes and packages, v. 0.4
+===========================================================================
 
 **The (quick 'n dirty) `denisbdoc` package is just for documenting the classes
 I've written.**

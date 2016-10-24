@@ -5,9 +5,8 @@
 %% The original source files were:
 %%
 %% denisbdoc.dtx  (with options: `package')
-%% -----------------------------------------------------------------------
 %% -----------------------------------------------------------------------------
-%% denisbdoc --- A personal dirty package for documenting packages, version 0.2
+%% denisbdoc --- A personal dirty package for documenting packages, version 0.4
 %% 
 %% Maintained by Denis Bitouz'e
 %% E-mail: denis.bitouze@lmpa.univ-littoral.fr
@@ -16,7 +15,7 @@
 %% -----------------------------------------------------------------------------
 %% 
 \RequirePackage{expl3,l3keys2e,xparse}
-\ProvidesExplPackage {denisbdoc} {2016/04/04} {0.2}
+\ProvidesExplPackage {denisbdoc} {2016/10/24} {0.4}
   {A personal package for documenting packages}
 \@ifpackagelater { expl3 } { 2012/11/21 }
   { }
@@ -29,6 +28,13 @@
       }
     \tex_endinput:D
   }
+\keys_define:nn { denisbdoc }
+{
+  yad .bool_gset:N = \g__denisbdoc_yad_bool,
+  gzt .bool_gset:N = \g__denisbdoc_gzt_bool,
+  nwejm .bool_gset:N = \g__denisbdoc_nwejm_bool,
+}
+\ProcessKeysOptions { denisbdoc }
 \PassOptionsToPackage{obeyspaces}{url}
 \pdftex_if_engine:TF
   {
@@ -38,22 +44,23 @@
     \RequirePackage{fontspec}
   }
 \RequirePackage{xpatch}%
-\AtEndPreamble{\RequirePackage{morewrites}}%
+\AtEndPreamble{%
+  \RequirePackage{mweights}%
+}%
 \RequirePackage{parskip}%
 \RequirePackage{fixfoot}%
+\RequirePackage{marginnote}
 \RequirePackage[inline]{enumitem}%
 \RequirePackage{afterpage}%
 \RequirePackage{calc}%
 \RequirePackage{siunitx}%
-\RequirePackage[nottoc,notindex]{tocbibind}%
-\RequirePackage{varioref}%
 \RequirePackage{booktabs}%
 \RequirePackage[xr]{zref}%
-\RequirePackage[multiple% ,bottom
-]{footmisc}%
+\RequirePackage[multiple]{footmisc}%
 \RequirePackage{rotating}%
 \RequirePackage{pdflscape}%
 \RequirePackage{xspace}%
+\RequirePackage{accsupp}
 \RequirePackage{hologo}%
 \RequirePackage{xifthen}%
 \RequirePackage{refcount}%
@@ -64,31 +71,50 @@
 \RequirePackage{ltxcmds}%
 \RequirePackage{csquotes}%
 \RequirePackage{tikz}%
-\RequirePackage[xindy]{imakeidx}
+\RequirePackage{translator}%
 \let\EUR\relax
-\@ifpackageloaded{tcolorbox}{%
-}{%
-  \RequirePackage{tcolorbox}%
-}%
 \RequirePackage{comment}%
 \RequirePackage{path}%
 \RequirePackage{textcase}%
 \RequirePackage{fontawesome}%
 \@ifpackageloaded{biblatex}{%
+\AtEndPreamble{%
+  \bool_if:nT {\g__denisbdoc_yad_bool} {%
+    % \defbibheading{bibintoc}[\bibname]{\chapter*{#1}}%
+    % % \defbibheading{subbibintoc}[\bibname]{\section*{#1}}%
+    % \defbibheading{YAD@localbibs@heading}[\translate{lbl-localbibname}]{%
+    %   % \YAD@setsecnumdepth{none}%
+    %   \section*{#1}%
+    %   % \YAD@setsecnumdepth{\YAD@secnumdepth}%
+    % }%
+    \let\__denisbdoc_printbibliography_ORI\printbibliography%
+    \renewcommand{\printbibliography}[1][]{%
+      \pagestyle{biblio}%
+      \__denisbdoc_printbibliography_ORI[heading=bibintoc,#1]%
+      \pagestyle{ordinary}%
+    }%
+  }{%
+  }%
+}%
 }{%
   \RequirePackage[backend=biber,style=authortitle,autopunct=false,useprefix=true,backref,dashed=false]{biblatex}%
 }%
+\RequirePackage{morewrites}%
 \RequirePackage{babel}%
 \RequirePackage[nodayofweek]{datetime}%
 \RequirePackage{subcaption}%
-\@ifpackageloaded{hyperref}{%
-  % \message{^^J^^JDeja~charge~!^^J^^J}}
+\RequirePackage{tocbibind}%
+\RequirePackage[xindy]{imakeidx}
+\RequirePackage{varioref}%
+\@ifpackageloaded{tcolorbox}{%
 }{%
-  \RequirePackage[hyperfootnotes=false]{hyperref}%
-  % \message{^^J^^JPas~deja~charge~!^^J^^J}}
+  \RequirePackage{tcolorbox}%
 }%
-\RequirePackage{attachfile2}
-\@ifpackageloaded{nameref}{%
+\@ifpackageloaded{hyperref}{%
+}{%
+  \RequirePackage[hyperfootnotes=false,hyperindex=false]{hyperref}%
+}%
+\RequirePackage{attachfile2} \@ifpackageloaded{nameref}{%
 }{%
   \RequirePackage{nameref}%
 }%
@@ -102,15 +128,39 @@
 }%
 \@ifpackageloaded{glossaries}{%
 }{%
-  \RequirePackage[nowarn,toc,hyperfirst=false]{glossaries}%
-  \makeglossaries
-  \setglossarystyle{indexhypergroup}
-  \setacronymstyle{long-sc-short}
+  % \RequirePackage{glossaries}%
+  \RequirePackage[hyperfirst=false,toc=false]{glossaries-extra}%
+  \makeglossaries%
+  \setglossarystyle{indexhypergroup}%
+  \setabbreviationstyle[acronym]{long-short-sc}%
+  \newcommand*{\formatfont}[1]{\textsc{#1}}%
+  \glssetcategoryattribute{format}{glossnamefont}{formatfont}%
+  \glssetcategoryattribute{format}{font}{formatfont}%
+  \renewcommand*{\glsxtrregularfont}[1]{%
+    \glshasattribute{\glslabel}{font}%
+    {\csuse{\glsgetattribute{\glslabel}{font}}{#1}}%
+    {#1}%
+  }%
 }%
 \@ifpackageloaded{cleveref}{%
 }{%
   \RequirePackage{cleveref}%
 }%
+\def\hdpindex#1#2{%
+  \csname\ifx\\#1\\relax\else#1\fi\endcsname{%
+    \hyperpage{#2}%
+  }%
+}
+\let\HDorg@wrglossary\@wrglossary
+\def\@wrglossary#1{%
+  \let\HDorg@encapchar\encapchar
+  \def\encapchar##1\encapchar##2\@nil{%
+    \HDorg@encapchar
+    hdpindex{##1}%
+  }%
+  \HDorg@wrglossary{#1\encapchar\encapchar\@nil}%
+}
+\renewcommand{\acrpluralsuffix}{}
 \ltx@iffilelater{frenchb.ldf}{2016/03/20}{%
 }{%
   \DeclareRobustCommand*{\NoAutoSpacing}{\FBAutoSpaceGuillfalse%
@@ -132,21 +182,70 @@
   }
 \fi
 \tcbuselibrary{%
-  documentation,theorems,breakable,skins%
+  documentation,theorems,breakable,skins,xparse%
 }
+\tcbset{%
+  commandshell/.style={%
+    colback=black,
+    colupper=white,
+    colframe=yellow!75!black,
+    breakable,
+    listing only,
+    listing options={style=tcblatex,language=bash,escapeinside={(*@}{@*)}},
+    every listing line={%
+      \textcolor{red}{%
+        \small\ttfamily\bfseries%
+        \BeginAccSupp{method=plain,ActualText={}}
+        \$
+        \EndAccSupp{}%
+      }
+    },
+  }
+}
+\patchcmd{\@mn@margintest}{\@tempswafalse}{\@tempswatrue}{}{}
+\patchcmd{\@mn@margintest}{\@tempswafalse}{\@tempswatrue}{}{}
+\reversemarginpar
+\DeclareTotalTCBox{\commandshell}{  v  }
+{ commandshell}{#1}
 \usetikzlibrary{trees,backgrounds,fit,calc,positioning}
 \attachfilesetup{color=Hyperlink}
+\newcommand{\targetindexentry}[1]{\hypertarget{index:#1}{#1}}
+\newcounter{targeti}
+\newcommand{\targetindexentryi}[1]{\stepcounter{targeti}\hypertarget{\thetargeti:index:#1}{#1}}
+\newcounter{targetii}
+\newcommand{\targetindexentryii}[1]{\stepcounter{targetii}\hypertarget{\thetargetii:index:#1}{#1}}
+\newcommand{\seelink}[1]{\see{\hyperlink{index:#1}{#1}}}
+\newcommand{\indexdef}[1]{\index{#1|definition}}
+\newcommand{\indexex}[1]{%
+  \index{#1|example}%
+  \index{exemple!#1|example}%
+}
+\newcommand{\indexsee}[2]{\index{#1|see{#2}}}
+\xpretocmd{\printindex}{\def\DBD@index@symbolic@name{#1}}{}{}
+\xpatchcmd{\indexprologue}{#2}{%
+  #2
+  \par\bigskip
+  \csuse{DBD@indexnavigation@\csuse{DBD@index@symbolic@name}}%
+}{}{}%
+\newif\if@DBD@no@first@letter@
+\@DBD@no@first@letter@false
+\newcommand*{\indexheading}[2]{%
+  \hypertarget{#2:#1}{\textbf{#1}}%
+  \protected@write\@auxout{}{\string\DBD@indexgroup{#1}{#2}}%
+}
+\newcommand*{\DBD@indexgroup}[2]{%
+  \csgappto{DBD@indexnavigation@#2}{%
+    \if@DBD@no@first@letter@
+    \,\textbar\,%
+    % \\
+    \else
+    \noindent
+    \@DBD@no@first@letter@true
+    \fi
+    \hyperlink{#2:#1}{\textbf{#1}}%
+  }%
+}
 \ExplSyntaxOn
-\ifundef{\inpenc@prehook}{%
-}{%
-  \inpenc@prehook=\expandafter{\the\inpenc@prehook
-    \xdef\saved@percent@catcode{\the\catcode`\%}%
-    \catcode`\%14\relax
-  }%
-  \inpenc@posthook=\expandafter{\the\inpenc@posthook
-    \catcode`\%\saved@percent@catcode\relax
-  }%
-}%
 \DeclareUrlCommand\urldirectory{\urlstyle{tt}}
 \ExplSyntaxOn
 \tl_const:Nn \c__denisbdoc_template_string_tl {../exemples/canevas}
@@ -156,7 +255,7 @@
 \tl_const:Nn \c__denisbdoc_treetemplate_string_tl {\c__denisbdoc_template_string_tl/en-arborescence}
 \tl_const:Nn \c__denisbdoc_treesample_string_tl {\c__denisbdoc_sample_string_tl/en-arborescence}
 \tl_const:Nn \c__denisbdoc_unixtldirectory_string_tl {/usr/local/}
-\tl_const:Nn \c__denisbdoc_tlversion_string_tl {2014}
+\tl_const:Nn \c__denisbdoc_tlversion_string_tl {2016}
 \tl_const:Nn \c__denisbdoc_wintldirectory_string_tl {c:/}
 \tl_const:Nn \c__denisbdoc_tldistdirectory_string_tl {texlive/\tlversion/texmf-dist/}
 \tl_const:Nn \c__denisbdoc_miktexdistdirectory_string_tl {[TODO]}
@@ -196,7 +295,8 @@
     appendix,lstlistoflistings,graphicpath,loadglsentries,hypersetup,detect-all,SetWatermarkColor,%
     @pnumwidth,bookmarksetup,DeclareTextCommand,text,iiint,NewPairedDelimiter,%
     norm,lnorm,llnorm,lpnorm,supnorm,abs,prt,brk,brc,lrangle,leqgeq,%
-    norm*,lnorm*,llnorm*,lpnorm*,supnorm*,abs*,prt*,brk*,brc*,lrangle*,leqgeq*%
+    norm*,lnorm*,llnorm*,lpnorm*,supnorm*,abs*,prt*,brk*,brc*,lrangle*,leqgeq*,%
+    pdfobjcompresslevel%
   },%
   morekeywords=[1]{% Environments' names
     tabular,tabulary,math,document,minipage,eqnarray,eqnarray*,align,align*,%
@@ -214,10 +314,14 @@
 {%
   % Séquences de contrôles (communément appelées commandes ou macros)
   moretexcs={%
-    makeglossaries,printglossaries,printglossary,newglossaryentry,gls,Gls,GLS,glspl,Glspl,GLSpl,newacronym,%
-    glsuseri,glsuserii,glsuseriii,glsuseriv,glsuserv,glsuservi,glsshortpluralkey,glslongpluralkey,loadglsentries,%
-    glsadd,glstextformat,glsnamefont,glossarypreamble,glossarypostamble,acrshort,acrshort*,acrlong,acrfull,%
-    Acrshort,ACRshort,Acrlong,ACRlong,Acrfull,ACRfull,acrshortpl,Acrshortpl,acrlongpl,Acrlongpl,acrfullpl,Acrfullpl,%
+    makeglossaries,printglossaries,printglossary,newglossaryentry,gls,Gls,GLS,glspl,Glspl,%
+    GLSpl,newacronym,%
+    glsuseri,glsuserii,glsuseriii,glsuseriv,glsuserv,glsuservi,glsshortpluralkey,glslongpluralkey,%
+    loadglsentries,%
+    glsadd,glstextformat,glsnamefont,glossarypreamble,glossarypostamble,acrshort,acrshort*,%
+    acrlong,acrfull,%
+    Acrshort,ACRshort,Acrlong,ACRlong,Acrfull,ACRfull,acrshortpl,Acrshortpl,acrlongpl,Acrlongpl,%
+    acrfullpl,Acrfullpl,%
     Acrlong*,acronymtype,printacronyms,printsymbols%
   },%
   % Environments' names
@@ -226,7 +330,7 @@
   % Mots-clés de niveau 2 : arguments obligatoires et environnements
   morekeywords=[2]{%
     first,firstplural,plural,sort,nonumberlist,name,acronym,acronyms,symbols,%
-    user1,user2,user3,user4,user5,user6,hyper,style,xindy,toc,%
+    user1,user2,user3,user4,user5,user6,hyper,style,xindy,toc,title,%
     useri,userii,useriii,useriv,userv,uservi%
   },%
   % Mots-clés de niveau 3 : arguments optionnels valeurs de clés dans clé=valeur
@@ -270,11 +374,11 @@
   % Mots-clés de niveau 2 : arguments obligatoires et environnements
   morekeywords=[2]{%
     % title,
-    heading%
+    heading,refsegment%
   },%
   % Mots-clés de niveau 3 : arguments optionnels valeurs de clés dans clé=valeur
   morekeywords=[3]{%
-    bibintoc,skipbib%
+    bibintoc,skipbib,chapter%
   },%
   sensitive%
 }[keywords,tex,comments]%
@@ -387,10 +491,10 @@
     author,title,subtitle,academicfield,speciality,date,supervisor,cosupervisor,comonitor,%
     referee,guest,examiner,committeepresident,pres,institute,coinstitute,company,doctoralschool,%
     laboratory,dedication,frontepigraph,keywords,subject,expression,tableofcontents,submissiondate,%
-    maketitle,makedisclaimer,makekeywords,makelaboratory,makeabstract,makededications,makefrontepigraphs,%
+    maketitle,makedisclaimer,makekeywords,makelaboratory,makeabstract,makededications,%
+    makefrontepigraphs,makebackcover,ordernumber,chapter*,disclaimer,newglssymbol,yadsetup,%
+    comue,%
     % acknowledgements,frenchabstract,foreword,preface,caution,
-    makebackcover,ordernumber,chapter*,%
-    disclaimer,newglssymbol,yadsetup%
   },%
   % Environments' names
   morekeywords={%
@@ -401,14 +505,14 @@
     glossaries,otherlanguage%
   },%
   morekeywords=[2]{% Keys of key-value lists
-    professor,seniorresearcher,mcf,juniorresearcher,mcf*,%
+    professor,seniorresearcher,mcf,associateprofessor,juniorresearcher,mcf*,associateprofessor*,%
     juniorresearcher*,corporation,corps,male,female,%
     distinction,award,affiliation,sepcorpaffilfrench,affiliationsecondary,sepcorpaffilenglish,%
     logo,url,nologo,space,mainlanguage,secnumdepth,tocdepth,depth,version,output,logoheight,%
     address,telephone,fax,email,type,acronym,heading,nowarning,noerror,nofrontcover,role,%
     hyperfootnotes,hyperindex,plainpages,pdfpagemode,pdfpagelayout,locale,gray,frametitle,%
     graphicx,adjustbox,setspace,xcolor,datatool,titleps,draftwatermark,babel,datetime,%
-    bookmark,fncychap,%
+    bookmark,fncychap,localtocs,localbibs,localbibs*%
   },%
   morekeywords=[3]{% Values of key-value lists
     single,onehalf,double,doctor,yadsymbolstyle,%
@@ -416,7 +520,7 @@
     none,true,false,UseOutlines,TwoPageRight,UK,FR,dvipsnames,table,%
     Sonny,Lenny,Glenn,Conny,Rejne,Bjarne,PetersLenny,Bjornstrup,%
     screen,draft,inprogress,inprogress*,submitted,submitted*,final,paper,paper*,%
-    fbox,shadowbox,ovalbox,supervisor*,cosupervisor*,comonitor*,%
+    fbox,shadowbox,ovalbox,supervisor*,cosupervisor*,comonitor*%
   },%
   morekeywords=[4]{% Class and packages options
     warn,nodayofweek,unicode,nostamp,all,numbered,a4paper,leqno,fleqn,10pt,11pt,12pt,%
@@ -527,7 +631,11 @@
 \setlength\bibinitsep{1.25\baselineskip}
 \SetCiteCommand{\autocite}
 \renewcommand{\ttdefault}{lmtt}
-\xapptocmd{\@section}{%
+{%
+  \ttfamily%
+  \DeclareFontShape{T1}{lmtt}{bx}{it}{<-> ssub * lmtt/b/sl}{}%
+}
+\xapptocmd{\@chapter}{%
   \addtocontents{dbwarninglist}{\protect\addvspace{10\p@}}%
   \addtocontents{dbremarklist}{\protect\addvspace{10\p@}}%
   \addtocontents{dbexamplelist}{\protect\addvspace{10\p@}}%
@@ -574,7 +682,8 @@
     breakable,
     fonttitle=\bfseries,
     enlarge~top~by=1mm,
-    separator~sign~dash
+    separator~sign~dash,
+    label~separator=-
   }%
 }%
 \tcbset{%
@@ -590,7 +699,8 @@
   /tcb/color~environment=environment,
   /tcb/color~key=key,
   /tcb/color~value=value,
-  index~format=pgfchapter,
+  % index~format=pgfchapter,
+  index~format=off,
   index~colorize,
   index~annotate=false,
   enhanced,
@@ -614,11 +724,33 @@
     % listing~options={rangebeginprefix=\\,rangeendsuffix=\}}
   }%
 }%
+\renewcommand*{\tcbdocnew}[1]{\scriptsize\sffamily\textcolor{green!50!black}{\bfseries
+Nouv.~:}~#1}
+\renewcommand*{\tcbdocupdated}[1]{\scriptsize\sffamily\textcolor{blue!75!black}{\bfseries
+\textsc{m.-à-j.}~:}~#1}
 \def\disp@com#1{\colDef{\ttfamily#1}}
 \define@key{Gin}{bylabel}{%
     \edef\@tempa{{Gin}{page=\zref@extract{#1}{abspage}}}%
     \expandafter\setkeys\@tempa%
 }%
+\NewDocumentCommand \translateexpression { sm }
+{
+  \enquote{\foreignlanguage{french}{\translate{#2}}}~
+  ou~
+  \enquote{\foreignlanguage{english}{\translate{#2}}}%
+  \IfBooleanF {#1}
+  {
+    \selonlangue%
+    \index{expression!en~français!\enquote{\foreignlanguage{french}{\translate{#2}}}}%
+    \index{expression!en~anglais!\enquote{\foreignlanguage{english}{\translate{#2}}}}%
+  }
+}
+\expandafter\AtBeginDocument\expandafter{%
+  \expandafter\def\expandafter\theindex\expandafter{\theindex}%
+}
+\expandafter\AtBeginDocument\expandafter{%
+  \expandafter\def\expandafter\endtheindex\expandafter{\endtheindex}%
+}
 \cs_new_protected:Nn \__denisbdoc_alert:n
 {
   \begingroup
@@ -630,54 +762,88 @@
 {
   \__denisbdoc_alert:n {#1}
 }%
-\cs_set_eq:NN \__denisbdoc_orig_changes \changes
+\makeindex[name=\jobname-changes,title=Historique~des~changements,options=-M~denisbdoc-chng.xdy]
 \DeclareDocumentCommand \changes { smmm } {
-  \__denisbdoc_orig_changes{#2}{#3}{%
-    \IfBooleanTF {#1}
-    {
-      \alert{#4}%
-    }
-    {
-      #4%
-    }
-  }
-}
-\tl_const:Nx \c__denisbdoc_standard_url_tl { \tl_to_str:n { http://www.ctan.org/pkg/ } }
-\cs_new_protected:Npn \__denisbdoc_package_format:n #1
-  { \textsf {#1} }
-\cs_new_protected:Npn \__denisbdoc_package:nnn #1#2#3
+  \IfBooleanTF {#1}
   {
-    \texorpdfstring
-      {
-        \bool_if:nTF {#1}
-          { \__denisbdoc_package_format:n {#3} }
-          {
-            \tl_if_blank:nTF {#2}
-              {
-                \href
-                  { \c__denisbdoc_standard_url_tl #3}
-                  { \__denisbdoc_package_format:n {#3} }
-              }
-              { \href {#2} { \__denisbdoc_package_format:n {#3} } }
-          }
-      }
-      {#3}
+    \tl_set:Nn \l_tmpa_tl {\alert{#4}}
+  }{
+    \tl_set:Nn \l_tmpa_tl {#4}
   }
-\NewDocumentCommand{\package}{ s O{} m } {
-  \__denisbdoc_package:nnn {#1}{#2}{#3}
+  \index[\jobname-changes]{\texttt{#2}~(#3)!\l_tmpa_tl}
 }
-\NewDocumentCommand{\Package}{ s O{} m } {
+\DeclareDocumentCommand \PrintChanges { o } {
+  \indexprologue{#1}
+  \def\imki@indexlevel{\chapter}
+  \printindex[\jobname-changes]
+  \def\imki@indexlevel{\chapter*}
+}
+\IfLanguageName{french}{%
+  \DeclarePlainStyle{«~}{~»}%
+                    {“}{”}
+}{}%
+\tl_const:Nx \c__denisbdoc_standard_url_tl { \tl_to_str:n { http://www.ctan.org/pkg/ } }
+\cs_new_protected:Npn \__denisbdoc_package_format:nn #1#2
+{
+  #2{\sffamily#1}
+}
+\cs_new_protected:Npn \__denisbdoc_package:nnnnnnn #1#2#3#4#5#6#7
+{
+  \texorpdfstring
+  {
+    \bool_if:nTF {#1}
+    { \__denisbdoc_package_format:nn {#4}{#7} }
+    {
+      \tl_if_blank:nTF {#3}
+      {
+        \tl_set:Nx \l_tmpa_tl {\c__denisbdoc_standard_url_tl #4}
+        \href
+        { \l_tmpa_tl }
+        { \__denisbdoc_package_format:nn {#4}{#7} }
+      }
+      {
+        \href
+        { #3 }
+        { \__denisbdoc_package_format:nn {#4}{#7} }
+      }
+    }
+    \IfBooleanF{#2}
+    {
+      \tl_if_empty:nTF {#6}
+      {
+        \index{#5!liste!\textsf{#4}}
+      }{
+        \index{#5!liste!\textsf{#4}!#6}
+      }
+    }
+  }
+  {#4}
+}
+\NewDocumentCommand{\package}{ s t+ O{} m O{package} O{} O{} } {
+  \__denisbdoc_package:nnnnnnn {#1}{#2}{#3}{#4}{package}{#6}{#7}
+}
+\NewDocumentCommand{\Package}{ s t+ O{} m O{package} O{} O{} } {
   \IfLanguageName{french}{package~}{}%
-  \__denisbdoc_package:nnn {#1}{#2}{#3}
+  \__denisbdoc_package:nnnnnnn {#1}{#2}{#3}{#4}{package}{#6}{#7}
   \IfLanguageName{english}{~package}{}%
 }
-\NewDocumentCommand{\class}{ s O{} m } {
-  \__denisbdoc_package:nnn {#1}{#2}{#3}
+\NewDocumentCommand{\class}{ s t+ O{} m O{} O{} O{} } {
+  \IfLanguageName{french}{%
+    \__denisbdoc_package:nnnnnnn {#1}{#2}{#3}{#4}{classe}{#6}{#7}
+  }{}%
+  \IfLanguageName{english}{%
+    \__denisbdoc_package:nnnnnnn {#1}{#2}{#3}{#4}{class}{#6}{#7}
+  }{}%
 }
-\NewDocumentCommand{\Class}{ s O{} m } {
-  \IfLanguageName{french}{classe~}{}%
-  \__denisbdoc_package:nnn {#1}{#2}{#3}
-  \IfLanguageName{english}{~class}{}%
+\NewDocumentCommand{\Class}{ s t+ O{} m O{} O{} O{} } {
+  \IfLanguageName{french}{%
+    classe~%
+    \__denisbdoc_package:nnnnnnn {#1}{#2}{#3}{#4}{classe}{#6}{#7}
+  }{}%
+  \IfLanguageName{english}{%
+    \__denisbdoc_package:nnnnnnn {#1}{#2}{#3}{#4}{class}{#6}{#7}
+    ~class
+  }{}%
 }
 \cs_new_protected:Nn \__denisbdoc_format:n
 {
@@ -722,6 +888,34 @@
 \NewDocumentCommand{\program}{ m }
 {
   \__denisbdoc_file:n {#1}%
+}
+\NewDocumentCommand{\texstudio}{  }
+{
+  \program{TeXstudio}\xspace
+}
+\NewDocumentCommand{\emacs}{  }
+{
+  \program{Emacs}\xspace
+}
+\NewDocumentCommand{\texlive}{ }
+{
+  \TeX{}\space{}Live\xspace
+}
+\NewDocumentCommand{\miktex}{ }
+{
+  MiK\TeX\xspace
+}
+\NewDocumentCommand{\linux}{ }
+{
+  Linux\index{Linux}\xspace
+}
+\NewDocumentCommand{\macos}{ }
+{
+  Mac OS\index{Mac OS}\xspace
+}
+\NewDocumentCommand{\windows}{ }
+{
+  Windows\index{Windows}\xspace
 }
 \cs_new_protected:Nn \__denisbdoc_links:nnn
 {
@@ -856,6 +1050,10 @@
 {
   \directorytree{\c__denisbdoc_jobdocdirectory_string_tl}
 }%
+\NewDocumentCommand{\version}{ m }
+{
+  Version~\texttt{#1}
+}
 \NewDocumentCommand{\pdf}{}
 {
   \textsc{pdf}
@@ -869,14 +1067,54 @@
     \c__denisbdoc_aside_string_tl{}~#2~\c__denisbdoc_aside_string_tl
   }
 }
-\zexternaldocument{\c__denisbdoc_flatsample_string_tl/these}%
-\cs_new_protected:Nn \__denisbdoc_screenshot:nn
-{
-  \fbox{\includegraphics[bylabel=#2,width=#1\linewidth-2\fboxsep-2\fboxrule]{\c__denisbdoc_flatsample_string_tl/these}}%
+\bool_if:nT {\g__denisbdoc_yad_bool} {%
+  \zexternaldocument{\c__denisbdoc_flatsample_string_tl/these}%
+  \bool_new:N \g__denisbdoc_these_aux_exists
+  \msg_new:nnn{denisbdoc}{File~these.aux~needed}{%
+    File ~`these.aux' ~needed ~(otherwise ~this ~document ~will ~be ~incomplete)!\space
+    ~Please ~go ~to ~`\c__denisbdoc_flatsample_string_tl'\space
+    directory ~and ~run~first:\\\\
+
+    \ \ latexmk ~-f ~-pdf ~-jobname=these ~-pdflatex="pdflatex ~\%O ~ \string\ \\
+    \ \ '\string\RequirePackage\{etoolbox\}   ~ \string\ \\
+    \ \ \string\AtEndPreamble\{\string\RequirePackage\{yathesis-demo\}\}  ~ \string\ \\
+    \ \ \string\input\{\%S\}'"~these.tex
+    \\\\
+    Afterwards,~recompile~this~document.%
+  }%
+  \file_if_exist:nTF {\c__denisbdoc_flatsample_string_tl/these.aux} {
+    \bool_gset_true:N \g__denisbdoc_these_aux_exists
+  }{
+    % \bool_gset_false:N \g__denisbdoc_these_aux_exists
+    \msg_warning:nn{denisbdoc}{File~these.aux~needed}
+    \AfterEndPreamble{%
+      \begin{dbwarning}{Documentation~incomplète~!}{documentation-incomplete}
+        La ~présente ~documentation ~est ~incomplète ~car ~le ~\File{these.aux}\space
+        ~est ~absent ~du ~\Folder{specimen/a-plat}. ~Pour ~régler ~le ~problème,\space
+        ~rendez-vous ~dans ~ce ~dossier ~et ~compilez ~le ~\File{these.tex} ~au\space
+        ~moyen ~de ~la ~commande ~suivante ~(sur ~une ~seule ~ligne) ~:\par\medskip
+
+        \lstinline[language=bash,upquote=true,commentstyle=,stringstyle=,showstringspaces=false]+latexmk~-f~-pdf~-jobname=these~-pdflatex="pdflatex~\%O~'\\RequirePackage\{etoolbox\}\\AtEndPreamble\{\\RequirePackage\{yathesis-demo\}\}\\input\{\%S\}'"~these+
+      \end{dbwarning}
+    }
+  }
+  \cs_new_protected:Nn \__denisbdoc_screenshot:nn
+  {
+    \bool_if:NTF {\g__denisbdoc_these_aux_exists} {
+      \fbox{\includegraphics[bylabel=#2,width=#1\linewidth-2\fboxsep-2\fboxrule]{\c__denisbdoc_flatsample_string_tl/these}}%
+    }{%
+      \begin{dbwarning}{Copie~d'écran~manquante~!}{}
+        Il ~devrait ~ici ~y ~avoir ~une ~copie\space
+        ~d'écran. ~Cf. ~\vref{wa-documentation-incomplete} ~pour ~plus ~de\space
+        ~détails.
+      \end{dbwarning}
+    }
+  }
+  \NewDocumentCommand \screenshot { O{.45} m } {%
+    \__denisbdoc_screenshot:nn {#1}{#2}
+  }
 }
-\NewDocumentCommand \screenshot { O{.45} m } {%
-  \__denisbdoc_screenshot:nn {#1}{#2}
-}
+\pdfsuppresswarningpagegroup=1
 \cs_new_protected:Nn \__denisbdoc_meta:nn
 {
     \bgroup%
@@ -934,13 +1172,13 @@
 \newtcbtheorem[list~inside=dbfaqlist,number~within=\g__denisbdoc_number_within_tl,crefname={question}{questions}]{dbfaq}{Question}{%
   colback=lightgray!5!white,
   colframe=lightgray!75!black,
-  fontupper=\slshape,
+  fontupper=\itshape,
   dbtcb
 }{faq}
 \newtcbtheorem[list~inside=dbtabularlist,number~within=\g__denisbdoc_number_within_tl,crefname={tableau}{tableaux}]{dbtab}{Tableau}{%
   colback=purple!5!white,
   colframe=purple!75!black,
-  fontupper=\slshape,
+  fontupper=\itshape,
   dbtcb
 }{tab}
 \NewDocumentCommand{\menuentry}{ O{} m }
@@ -993,15 +1231,19 @@
 \tl_const:Nn \c__denisbdoc_thesis_master_file_string_tl {these}
 \NewDocumentCommand \yat { }
 {%
-  \textsl{\texttt{\c__denisbdoc_yat_class_name_tl}}\xspace
+  \textsl{\textsf{\c__denisbdoc_yat_class_name_tl}}
 }
 \NewDocumentCommand \yatpa { }
 {%
-  \Package{\yat}\xspace
+  \Package+{\c__denisbdoc_yat_class_name_tl}[\itshape][]\xspace
 }
 \NewDocumentCommand \yatcl { }
 {%
-  \texorpdfstring{\Class{\yat}\xspace}{classe yathesis}
+  \texorpdfstring{\class+{\c__denisbdoc_yat_class_name_tl}[][][\itshape]\xspace}{yathesis}
+}
+\NewDocumentCommand \yatCl { }
+{%
+  \texorpdfstring{\Class+{\c__denisbdoc_yat_class_name_tl}[][][\itshape]\xspace}{classe yathesis}
 }
 \NewDocumentCommand \configurationdirectory { }
 {%
@@ -1055,7 +1297,7 @@
 }
 \NewDocumentCommand \gztauthorcl { }
 {%
-  \Class{\gztauthor}
+  \Class+[http://ctan.org/pkg/gzt]{\gztauthor}
 }
 \tl_const:Nn \c__denisbdoc_nwejm_class_name_tl {nwejm}
 \tl_const:Nn \c__denisbdoc_nwejmauthor_class_name_tl {nwejmart}
@@ -1079,6 +1321,12 @@
 \NewDocumentCommand \nwejmauthorcl { }
 {%
   \Class[\c__denisbdoc_standard_url_tl\c__denisbdoc_nwejm_class_name_tl]{\c__denisbdoc_nwejmauthor_class_name_tl}
+}
+\pdfstringdefDisableCommands{%
+  \let\textcolor\@gobble
+  \def\yatcl{yathesis}
+  \def\yatCl{classe~yathesis}
+  \def\program#1{#1}
 }
 \ExplSyntaxOff
 %% Copyright (C) 2015, 2016 by
