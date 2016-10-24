@@ -3,14 +3,8 @@
 \iffalse
 %</internal>
 %<*readme>
------------------------------------------------------------------------
-
-- `denisbdoc` --- A personal package for documenting classes and packages, v. 0.3
-- E-mail: `denis.bitouze@lmpa.univ-littoral.fr`
-- Released under the LaTeX Project Public License v1.3c or later. See
-  http://www.latex-project.org/lppl.txt
-
------------------------------------------------------------------------
+denisbdoc - A personal package for documenting classes and packages, v. 0.4
+===========================================================================
 
 **The (quick 'n dirty) `denisbdoc` package is just for documenting the classes
 I've written.**
@@ -35,9 +29,8 @@ This package is currently not documented.
 \input l3docstrip.tex
 \askforoverwritefalse
 \preamble
------------------------------------------------------------------------
 -----------------------------------------------------------------------------
-denisbdoc --- A personal dirty package for documenting packages, version 0.2
+denisbdoc --- A personal dirty package for documenting packages, version 0.4
 
 Maintained by Denis Bitouz'e
 E-mail: denis.bitouze@lmpa.univ-littoral.fr
@@ -66,6 +59,11 @@ This work consists of the file  denisbdoc.dtx
 \usedir{tex/latex/denisbdoc}
 \generate{
   \file{\jobname.sty}{\from{\jobname.dtx}{package}}
+}
+\nopreamble\nopostamble
+\generate{
+  \file{\jobname.xdy}{\from{\jobname.dtx}{xindy-style}}
+  \file{\jobname-chng.xdy}{\from{\jobname.dtx}{xindy-style-chng}}
 }
 %</install>
 %<install>\endbatchfile
@@ -119,6 +117,8 @@ This work consists of the file  denisbdoc.dtx
 %
 %\changes{v0.1}{2015/03/15}{First CTAN version}
 %\changes{v0.2}{2016/04/04}{Second CTAN version}
+%\changes{v0.3}{2016/06/10}{Third CTAN version}
+%\changes{v0.4}{2016/10/24}{Fourth CTAN version}
 %
 %\begin{abstract}
 % ...
@@ -189,7 +189,7 @@ This work consists of the file  denisbdoc.dtx
 %
 % The usual preliminaries.
 %    \begin{macrocode}
-\ProvidesExplPackage {denisbdoc} {2016/04/04} {0.2}
+\ProvidesExplPackage {denisbdoc} {2016/10/24} {0.4}
   {A personal package for documenting packages}
 %    \end{macrocode}
 %
@@ -210,6 +210,21 @@ This work consists of the file  denisbdoc.dtx
   }
 %    \end{macrocode}
 %
+% \section{Options}
+%
+%    \begin{macrocode}
+\keys_define:nn { denisbdoc }
+{
+  yad .bool_gset:N = \g_@@_yad_bool,
+  gzt .bool_gset:N = \g_@@_gzt_bool,
+  nwejm .bool_gset:N = \g_@@_nwejm_bool,
+}
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\ProcessKeysOptions { denisbdoc }
+%    \end{macrocode}
+%
 % \section{Packages}
 %
 %    \begin{macrocode}
@@ -225,15 +240,9 @@ This work consists of the file  denisbdoc.dtx
     \RequirePackage{fontspec}
   }
 \RequirePackage{xpatch}%
-%    \end{macrocode}
-%
-% In order to as many write \enquote{streams} in auxiliary files as needed. It
-% is loaded at the end of preamble, otherwise the compilation stops a long time
-% at the line
-% ×(/usr/local/texlive/2014/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg)×
-% (trouble reported to the author).
-%    \begin{macrocode}
-\AtEndPreamble{\RequirePackage{morewrites}}%
+\AtEndPreamble{%
+  \RequirePackage{mweights}%
+}%
 %
 % \let\denisbdoc@ORI@task\task
 % \let\task\relax
@@ -243,21 +252,21 @@ This work consists of the file  denisbdoc.dtx
 % \RequirePackage{amsthm}%
 % \RequirePackage{thmtools}%
 \RequirePackage{fixfoot}%
+\RequirePackage{marginnote}
 \RequirePackage[inline]{enumitem}%
 \RequirePackage{afterpage}%
 \RequirePackage{calc}%
 % \RequirePackage[lining]{libertine}%
 \RequirePackage{siunitx}%
 % \RequirePackage[a4paper]{geometry}%
-\RequirePackage[nottoc,notindex]{tocbibind}%
-\RequirePackage{varioref}%
 \RequirePackage{booktabs}%
 \RequirePackage[xr]{zref}%
-\RequirePackage[multiple% ,bottom
-]{footmisc}%
+\RequirePackage[multiple]{footmisc}%
+% \RequirePackage[multiple,bottom]{footmisc}%
 \RequirePackage{rotating}%
 \RequirePackage{pdflscape}%
 \RequirePackage{xspace}%
+\RequirePackage{accsupp}
 \RequirePackage{hologo}%
 \RequirePackage{xifthen}%
 \RequirePackage{refcount}%
@@ -268,38 +277,84 @@ This work consists of the file  denisbdoc.dtx
 \RequirePackage{ltxcmds}%
 \RequirePackage{csquotes}%
 \RequirePackage{tikz}%
-%
-\RequirePackage[xindy]{imakeidx}
-%
+\RequirePackage{translator}%
 % \RequirePackage{scrlfile}
 %
 \let\EUR\relax
-\@ifpackageloaded{tcolorbox}{%
-}{%
-  \RequirePackage{tcolorbox}%
-}%
 \RequirePackage{comment}%
 \RequirePackage{path}%
 \RequirePackage{textcase}%
 \RequirePackage{fontawesome}%
 \@ifpackageloaded{biblatex}{%
+%    \end{macrocode}
+%
+% Réglage nécessaire sans quoi le titre courant \textquote{BIBLIOGRAPHIE}
+% apparaît en trop en entête et en pied de page
+%    \begin{macrocode}
+\AtEndPreamble{%
+  \bool_if:nT {\g_@@_yad_bool} {%
+    % \defbibheading{bibintoc}[\bibname]{\chapter*{#1}}%
+    % % \defbibheading{subbibintoc}[\bibname]{\section*{#1}}%
+    % \defbibheading{YAD@localbibs@heading}[\translate{lbl-localbibname}]{%
+    %   % \YAD@setsecnumdepth{none}%
+    %   \section*{#1}%
+    %   % \YAD@setsecnumdepth{\YAD@secnumdepth}%
+    % }%
+%    \end{macrocode}
+%
+% Redéfinition de la commande d'insertion de la bibliographie et ce,
+% seulement si le \Package{biblatex} est chargé
+% \begin{macro}{\printbibliography}
+%    \begin{macrocode}
+    \let\_@@_printbibliography_ORI\printbibliography%
+    \renewcommand{\printbibliography}[1][]{%
+      \pagestyle{biblio}%
+      \_@@_printbibliography_ORI[heading=bibintoc,#1]%
+      \pagestyle{ordinary}%
+    }%
+  }{%
+  }%
+}%
 }{%
   \RequirePackage[backend=biber,style=authortitle,autopunct=false,useprefix=true,backref,dashed=false]{biblatex}%
 }%
+%    \end{macrocode}
+%
+% In order to as many write \enquote{streams} in auxiliary files as needed. It
+% has to be loaded not too late (otherwise it cannot fix troubles it is used
+% for), but not too early (otherwise the compilation stops a long time at the
+% line:
+% ×/usr/local/texlive/.../texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg×,
+% trouble reported to the author).
+%    \begin{macrocode}
+\RequirePackage{morewrites}%
 \RequirePackage{babel}%
 % \RequirePackage[useregional]{datetime2}%
 \RequirePackage[nodayofweek]{datetime}%
 % \RequirePackage{floatrow}%
 \RequirePackage{subcaption}%
-% \RequirePackage{caption}%
-\@ifpackageloaded{hyperref}{%
-  % \message{^^J^^JDeja~charge~!^^J^^J}}
+%
+% \Pkg{tocbibind} should be loaded before \pkg{imakeidx}, otherwise it would
+% destroy the |\indexprologue| feature of the latter.
+\RequirePackage{tocbibind}%
+\RequirePackage[xindy]{imakeidx}
+%
+% \@ifpackageloaded{hypdoc}{%
+% }{%
+%   \let\oldmaketitle\maketitle
+%   \RequirePackage{hypdoc}%
+%   \let\maketitle\oldmaketitle
+% }%
+\RequirePackage{varioref}%
+\@ifpackageloaded{tcolorbox}{%
 }{%
-  \RequirePackage[hyperfootnotes=false]{hyperref}%
-  % \message{^^J^^JPas~deja~charge~!^^J^^J}}
+  \RequirePackage{tcolorbox}%
 }%
-\RequirePackage{attachfile2}
-\@ifpackageloaded{nameref}{%
+\@ifpackageloaded{hyperref}{%
+}{%
+  \RequirePackage[hyperfootnotes=false,hyperindex=false]{hyperref}%
+}%
+\RequirePackage{attachfile2} \@ifpackageloaded{nameref}{%
 }{%
   \RequirePackage{nameref}%
 }%
@@ -313,10 +368,19 @@ This work consists of the file  denisbdoc.dtx
 }%
 \@ifpackageloaded{glossaries}{%
 }{%
-  \RequirePackage[nowarn,toc,hyperfirst=false]{glossaries}%
-  \makeglossaries
-  \setglossarystyle{indexhypergroup}
-  \setacronymstyle{long-sc-short}
+  % \RequirePackage{glossaries}%
+  \RequirePackage[hyperfirst=false,toc=false]{glossaries-extra}%
+  \makeglossaries%
+  \setglossarystyle{indexhypergroup}%
+  \setabbreviationstyle[acronym]{long-short-sc}%
+  \newcommand*{\formatfont}[1]{\textsc{#1}}%
+  \glssetcategoryattribute{format}{glossnamefont}{formatfont}%
+  \glssetcategoryattribute{format}{font}{formatfont}%
+  \renewcommand*{\glsxtrregularfont}[1]{%
+    \glshasattribute{\glslabel}{font}%
+    {\csuse{\glsgetattribute{\glslabel}{font}}{#1}}%
+    {#1}%
+  }%
 }%
 \@ifpackageloaded{cleveref}{%
 }{%
@@ -324,8 +388,121 @@ This work consists of the file  denisbdoc.dtx
 }%
 %    \end{macrocode}
 %
+% Some code stolen from \pkg{hypdoc} in order page numbers in change history are
+% hyperlinks.
+%    \begin{macrocode}
+\def\hdpindex#1#2{%
+  \csname\ifx\\#1\\relax\else#1\fi\endcsname{%
+    \hyperpage{#2}%
+  }%
+}
+\let\HDorg@wrglossary\@wrglossary
+\def\@wrglossary#1{%
+  \let\HDorg@encapchar\encapchar
+  \def\encapchar##1\encapchar##2\@nil{%
+    \HDorg@encapchar
+    hdpindex{##1}%
+  }%
+  \HDorg@wrglossary{#1\encapchar\encapchar\@nil}%
+}
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\renewcommand{\acrpluralsuffix}{}
+%    \end{macrocode}
+%
+% % Some hacks to avoid issues of \pkg{hypdoc} reported by me at
+% % \url{https://github.com/ho-tex/oberdiek/issues} (currently not used because
+% % this package has to much issues)). 
+% %    \begin{macrocode}
+% \@ifpackageloaded{hypdoc}{%
+%   % \let\theglossary\HDorg@theglossary
+%   \def\listoftables{%
+% %    \end{macrocode}
+% %
+% % Hack against point 2 of this issue:
+% % \url{https://github.com/ho-tex/oberdiek/issues/12}.
+% %    \begin{macrocode}
+%     \bookmarksetup{startatroot}%
+%     \cleardoublepage
+% %    \end{macrocode}
+% %
+% %    \begin{macrocode}
+%     \ifHD@numbered
+%     \else
+%     \stepcounter{HD@unique}%
+%     \pdfbookmark[\HD@guesstoclevel{\HDorg@listoftables}]%
+% %    \end{macrocode}
+% %
+% % Hack against of this issue:
+% % \url{https://github.com/ho-tex/oberdiek/issues/8}.
+% %    \begin{macrocode}
+% {\listtablename}%
+% %    \end{macrocode}
+% %
+% %    \begin{macrocode}
+% {toc\theHD@unique}%
+%     \fi
+%     \begingroup
+%     \HD@sectionpatch
+%     \HDorg@listoftables
+%     \endgroup
+%   }
+%   \def\listoffigures{%
+% %    \end{macrocode}
+% %
+% % Hack against point 2 of this issue:
+% % \url{https://github.com/ho-tex/oberdiek/issues/12}.
+% %    \begin{macrocode}
+%     \bookmarksetup{startatroot}%
+%     \cleardoublepage
+% %    \end{macrocode}
+% %
+% %    \begin{macrocode}
+%     \ifHD@numbered
+%     \else
+%     \stepcounter{HD@unique}%
+%     \pdfbookmark[\HD@guesstoclevel{\HDorg@listoffigures}]%
+% %    \end{macrocode}
+% %
+% % Hack against of this issue:
+% % \url{https://github.com/ho-tex/oberdiek/issues/8}.
+% %    \begin{macrocode}
+% {\listfigurename}%
+% %    \end{macrocode}
+% %
+% %    \begin{macrocode}
+% {toc\theHD@unique}%
+%     \fi
+%     \begingroup
+%     \HD@sectionpatch
+%     \HDorg@listoffigures
+%     \endgroup
+%   }
+%   \patchcmd{\HDorg@listoffigures}
+%   {\chapter*{\listfigurename}}%
+%   {%
+%     \setsecnumdepth{none}%
+%     \chapter{\listfigurename}%
+%     \resetsecnumdepth*%
+%   }%
+%   {}%
+%   {}
+%   \patchcmd{\HDorg@listoftables}
+%   {\chapter*{\listtablename}}%
+%   {%
+%     \setsecnumdepth{none}%
+%     \chapter{\listtablename}%
+%     \resetsecnumdepth*%
+%   }%
+%   {}%
+%   {}
+% }{%
+% }
+% %    \end{macrocode}
+%
 % A trouble with ×\NoAutoSpacing× from \package{frenchb} has been fixed since
-% version 3.2b 2016-04-18. But this cannot be discriminate directly (see
+% version 3.2b 2016-04-18. But this cannot be discriminated directly (see
 % \url{http://tex.stackexchange.com/q/309680/18401}), hence we rely on
 % \Package{ltxcmds} for this:
 %    \begin{macrocode}
@@ -356,8 +533,61 @@ This work consists of the file  denisbdoc.dtx
   }
 \fi
 \tcbuselibrary{%
-  documentation,theorems,breakable,skins%
+  documentation,theorems,breakable,skins,xparse%
 }
+\tcbset{%
+  commandshell/.style={%
+    colback=black,
+    colupper=white,
+    colframe=yellow!75!black,
+    breakable,
+    listing only,
+    listing options={style=tcblatex,language=bash,escapeinside={(*@}{@*)}},
+    every listing line={%
+      \textcolor{red}{%
+        \small\ttfamily\bfseries%
+        \BeginAccSupp{method=plain,ActualText={}}
+        \$
+        \EndAccSupp{}%
+      }
+    },
+  }
+}
+%    \end{macrocode}
+%
+% We patch some \pkg{marginnote}'s internal macro in order |doc new| and |doc
+% update| margin notes provided by \pkg{tcolorbox} are always on the left hand
+% size and typesetted correctly.
+%    \begin{macrocode}
+% \newtcolorbox{tcbdocmarginnote@tmp}[2]{%
+%   enhanced jigsaw,size=fbox,boxrule=1pt,leftrule=0pt,rightrule=0pt,
+%   arc=0pt,outer arc=1pt,boxsep=1pt,top=1pt,bottom=1pt,
+%   nobeforeafter,width=\marginparwidth,
+%   colframe=red!50!white,colback=red!25!yellow!5!white,fontupper=\scriptsize,before upper=#2,
+%   doc@marginnote,#1%
+% }
+% \renewcommand{\tcbdocmarginnote}[2][]{%
+%   \marginnote[
+%   \begin{tcbdocmarginnote@tmp}{#1}{\flushright}
+%     #2
+%   \end{tcbdocmarginnote@tmp}
+%   ]{%
+%     \begin{tcbdocmarginnote@tmp}{#1}{\flushleft}
+%       #2
+%     \end{tcbdocmarginnote@tmp}
+%   }
+% }
+\patchcmd{\@mn@margintest}{\@tempswafalse}{\@tempswatrue}{}{}
+\patchcmd{\@mn@margintest}{\@tempswafalse}{\@tempswatrue}{}{}
+\reversemarginpar
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\DeclareTotalTCBox{\commandshell}{  v  }
+{ commandshell}{#1}
+% \newtcblisting{commandshell}[1][]{%
+%   style=commandshell,#1
+% }
 \usetikzlibrary{trees,backgrounds,fit,calc,positioning}
 %    \end{macrocode}
 %
@@ -365,21 +595,84 @@ This work consists of the file  denisbdoc.dtx
 % it the same as the \package{tcolorbox}' one:
 %    \begin{macrocode}
 \attachfilesetup{color=Hyperlink}
-%
-\ExplSyntaxOn
 %    \end{macrocode}
-% We apply a patch currently necessary (cf. \url|http://tex.stackexchange.com/a/233524/18401|).
+%
+% In order to get \pkg{hyperref} and \pkg{xindy} work nicely together
+% (cf. \url{http://geekographie.maieul.net/172}).
 %    \begin{macrocode}
-\ifundef{\inpenc@prehook}{%
-}{%
-  \inpenc@prehook=\expandafter{\the\inpenc@prehook
-    \xdef\saved@percent@catcode{\the\catcode`\%}%
-    \catcode`\%14\relax
+% \newcounter{target}
+% \newcommand{\targetindexentry}[1]{\hypertarget{\thetarget:index:#1}{#1}}
+\newcommand{\targetindexentry}[1]{\hypertarget{index:#1}{#1}}
+\newcounter{targeti}
+\newcommand{\targetindexentryi}[1]{\stepcounter{targeti}\hypertarget{\thetargeti:index:#1}{#1}}
+\newcounter{targetii}
+\newcommand{\targetindexentryii}[1]{\stepcounter{targetii}\hypertarget{\thetargetii:index:#1}{#1}}
+\newcommand{\seelink}[1]{\see{\hyperlink{index:#1}{#1}}}
+\newcommand{\indexdef}[1]{\index{#1|definition}}
+\newcommand{\indexex}[1]{%
+  \index{#1|example}%
+  \index{exemple!#1|example}%
+}
+\newcommand{\indexsee}[2]{\index{#1|see{#2}}}
+%    \end{macrocode}
+%
+% We patch the |\printindex| command in order to store the symbolic name of the
+% current index in the |\DBD@index@symbolic@name| dedicated command that will be
+% used to uniquify the |\belowpdfbookmark| added at the beginning of each
+% |\lettergroup| in the customized |theindex| environment (defined in the
+% customized index style \File{denisbdoc.xdy}).
+%    \begin{macrocode}
+\xpretocmd{\printindex}{\def\DBD@index@symbolic@name{#1}}{}{}
+%    \end{macrocode}
+%
+% We patch the |\indexprologue| command in order to provide a navigation line at
+% the start of the index with links to each group that is present in the index
+% (see \url{http://tex.stackexchange.com/q/334200/18401})).
+%    \begin{macrocode}
+% \renewcommand*{\marginfont}{\normalsize}
+% \renewcommand*{\marginnotevadjust}{.625\baselineskip}
+% %
+% \xpatchcmd{\theindex}{\imki@indexlevel{\indexname}}{%
+%   \imki@indexlevel{%
+%     \marginnote{\normalsize\csuse{DBD@indexnavigation@\csuse{DBD@index@symbolic@name}}}%
+%     \indexname%
+%   }
+% }{}{}%
+\xpatchcmd{\indexprologue}{#2}{%
+  #2
+  \par\bigskip
+  \csuse{DBD@indexnavigation@\csuse{DBD@index@symbolic@name}}%
+}{}{}%
+%    \end{macrocode}
+%
+% We create a boolean which tests if the letter in the navigation bar is the 1st
+% one or not (in the latter case, a newline is added).
+%    \begin{macrocode}
+\newif\if@DBD@no@first@letter@
+\@DBD@no@first@letter@false
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\newcommand*{\indexheading}[2]{%
+  \hypertarget{#2:#1}{\textbf{#1}}%
+  \protected@write\@auxout{}{\string\DBD@indexgroup{#1}{#2}}%
+}
+\newcommand*{\DBD@indexgroup}[2]{%
+  \csgappto{DBD@indexnavigation@#2}{%
+    \if@DBD@no@first@letter@
+    \,\textbar\,%
+    % \\
+    \else
+    \noindent
+    \@DBD@no@first@letter@true
+    \fi
+    \hyperlink{#2:#1}{\textbf{#1}}%
   }%
-  \inpenc@posthook=\expandafter{\the\inpenc@posthook
-    \catcode`\%\saved@percent@catcode\relax
-  }%
-}%
+}
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\ExplSyntaxOn
 %    \end{macrocode}
 %
 %    \begin{macrocode}
@@ -428,7 +721,7 @@ This work consists of the file  denisbdoc.dtx
 % \begin{macro}{\c_@@_miktexdistdirectory_string_tl}
 %    \begin{macrocode}
 \tl_const:Nn \c_@@_unixtldirectory_string_tl {/usr/local/}
-\tl_const:Nn \c_@@_tlversion_string_tl {2014}
+\tl_const:Nn \c_@@_tlversion_string_tl {2016}
 \tl_const:Nn \c_@@_wintldirectory_string_tl {c:/}
 \tl_const:Nn \c_@@_tldistdirectory_string_tl {texlive/\tlversion/texmf-dist/}
 \tl_const:Nn \c_@@_miktexdistdirectory_string_tl {[TODO]}
@@ -501,7 +794,8 @@ This work consists of the file  denisbdoc.dtx
     appendix,lstlistoflistings,graphicpath,loadglsentries,hypersetup,detect-all,SetWatermarkColor,%
     @pnumwidth,bookmarksetup,DeclareTextCommand,text,iiint,NewPairedDelimiter,%
     norm,lnorm,llnorm,lpnorm,supnorm,abs,prt,brk,brc,lrangle,leqgeq,%
-    norm*,lnorm*,llnorm*,lpnorm*,supnorm*,abs*,prt*,brk*,brc*,lrangle*,leqgeq*%
+    norm*,lnorm*,llnorm*,lpnorm*,supnorm*,abs*,prt*,brk*,brc*,lrangle*,leqgeq*,%
+    pdfobjcompresslevel%
   },%
   morekeywords=[1]{% Environments' names
     tabular,tabulary,math,document,minipage,eqnarray,eqnarray*,align,align*,%
@@ -519,10 +813,14 @@ This work consists of the file  denisbdoc.dtx
 {%
   % Séquences de contrôles (communément appelées commandes ou macros)
   moretexcs={%
-    makeglossaries,printglossaries,printglossary,newglossaryentry,gls,Gls,GLS,glspl,Glspl,GLSpl,newacronym,%
-    glsuseri,glsuserii,glsuseriii,glsuseriv,glsuserv,glsuservi,glsshortpluralkey,glslongpluralkey,loadglsentries,%
-    glsadd,glstextformat,glsnamefont,glossarypreamble,glossarypostamble,acrshort,acrshort*,acrlong,acrfull,%
-    Acrshort,ACRshort,Acrlong,ACRlong,Acrfull,ACRfull,acrshortpl,Acrshortpl,acrlongpl,Acrlongpl,acrfullpl,Acrfullpl,%
+    makeglossaries,printglossaries,printglossary,newglossaryentry,gls,Gls,GLS,glspl,Glspl,%
+    GLSpl,newacronym,%
+    glsuseri,glsuserii,glsuseriii,glsuseriv,glsuserv,glsuservi,glsshortpluralkey,glslongpluralkey,%
+    loadglsentries,%
+    glsadd,glstextformat,glsnamefont,glossarypreamble,glossarypostamble,acrshort,acrshort*,%
+    acrlong,acrfull,%
+    Acrshort,ACRshort,Acrlong,ACRlong,Acrfull,ACRfull,acrshortpl,Acrshortpl,acrlongpl,Acrlongpl,%
+    acrfullpl,Acrfullpl,%
     Acrlong*,acronymtype,printacronyms,printsymbols%
   },%
   % Environments' names
@@ -531,7 +829,7 @@ This work consists of the file  denisbdoc.dtx
   % Mots-clés de niveau 2 : arguments obligatoires et environnements
   morekeywords=[2]{%
     first,firstplural,plural,sort,nonumberlist,name,acronym,acronyms,symbols,%
-    user1,user2,user3,user4,user5,user6,hyper,style,xindy,toc,%
+    user1,user2,user3,user4,user5,user6,hyper,style,xindy,toc,title,%
     useri,userii,useriii,useriv,userv,uservi%
   },%
   % Mots-clés de niveau 3 : arguments optionnels valeurs de clés dans clé=valeur
@@ -576,92 +874,14 @@ This work consists of the file  denisbdoc.dtx
   % Mots-clés de niveau 2 : arguments obligatoires et environnements
   morekeywords=[2]{%
     % title,
-    heading%
+    heading,refsegment%
   },%
   % Mots-clés de niveau 3 : arguments optionnels valeurs de clés dans clé=valeur
   morekeywords=[3]{%
-    bibintoc,skipbib%
+    bibintoc,skipbib,chapter%
   },%
   sensitive%
 }[keywords,tex,comments]%
-%
-% \lst@definelanguage[biblatex]{TeX}[LaTeX]{TeX}%
-% {%
-%   % Séquences de contrôles (communément appelées commandes ou macros)
-%   moretexcs={%
-%     cite,Cite,parencite,Parencite,footcite,footcitetext,%
-%     textcite,Textcite,supercite,cites,Cites,parencites,%
-%     Parencites,footcitesfootcitetexts,textcites,Textcites,%
-%     supercites,autocite,Autocite,autocite*,Autocite*,autocites,%
-%     Autocites,citeauthor,Citeauthor,citetitle,citetitle*,%
-%     citeyear,citeurl,parentext,brackettext,nocite,fullcite,%
-%     footfullcite,volcite,Volcite,pvolcite,Pvolcite,fvolcite,%
-%     ftvolcite,tvolcite,Tvolcite,avolcite,Avolcite,notecite,%
-%     Notecite,pnotecite,Pnotecite,fnotecite,citename,citelist,%
-%     citefield,printbibliography,bibliography,citedate,%
-%     ExecuteBibliographyOptions,defbibnote,psq,psqq,addbibresource%
-%   },%
-%   % directives
-%   directives={%
-%     article,book,inbook,bookinbook,suppbook,booklet,collection,%
-%     conference,incollection,suppcollection,manual,misc,online,%
-%     patent,periodical,suppperiodical,proceedings,inproceedings,%
-%     reference,inreference,report,thesis,unpublished,%
-%     Article,Book,Inbook,Bookinbook,Suppbook,Booklet,Collection,%
-%     conference,Incollection,Suppcollection,Manual,Misc,Online,%
-%     patent,Periodical,Suppperiodical,Proceedings,Inproceedings,%
-%     reference,Inreference,Report,Thesis,Unpublished,%
-%     ARTICLE,BOOK,INBOOK,BOOKINBOOK,SUPPBOOK,BOOKLET,COLLECTION,%
-%     CONFERENCE,INCOLLECTION,SUPPCOLLECTION,MANUAL,MISC,ONLINE,%
-%     PATENT,PERIODICAL,SUPPPERIODICAL,PROCEEDINGS,INPROCEEDINGS,%
-%     REFERENCE,INREFERENCE,REPORT,THESIS,UNPUBLISHED,%
-%     string,String,STRING,comment%
-%   },%
-%   % Mots-clés de niveau 3 : attributs et options de biblatex
-%   morekeywords=[3]{%
-%     abstract,addendum,afterword,annotation,annotator,author,authortype,%
-%     bookauthor,bookpagination,booksubtitle,booktitle,booktitleaddon,%
-%     chapter,commentator,date,doi,edition,editor,editora,editorb,%
-%     editorc,editortype,editoratype,editorbtype,editorctype,eid,eprint,%
-%     eprintclass,eprinttype,eventdate,eventtitle,file,foreword,holder,%
-%     howpublished,indextitle,institution,introduction,isan,isbn,ismn,%
-%     isrn,issn,issue,issuesubtitle,issuetitle,iswc,journalsubtitle,%
-%     journaltitle,label,language,library,location,mainsubtitle,%
-%     maintitle,maintitleaddon,month,nameaddon,note,number,organization,%
-%     origdate,origlanguage,origlocation,origpublisher,origtitle,pages,%
-%     pagetotal,pagination,part,publisher,pubstate,reprinttitle,series,%
-%     shortauthor,shorteditor,shorthand,shorthandintro,shortjournal,%
-%     shortseries,shorttitle,subtitle,title,titleaddon,translator,type,%
-%     url,urldate,venue,version,volume,volumes,year,crossref,entryset,%
-%     entrysubtype,execute,gender,hyphenation,indexsorttitle,keywords,%
-%     options,presort,sortkey,sortname,sorttitle,sortyear,xref,annote,%
-%     archiveprefix,journal,key,pdf,primaryclass,school,address,%
-%     %
-%     backend,style,citestyle,bibstyle,sorting,maxnames,minnames,maxitems,minitems,%
-%     backref,abbreviate,firstinits,prenote,postnote,useprefix%
-%   },%
-%   % Mots-clés de niveau 4 : valeurs des attributs identifiées
-%   morekeywords=[3]{%
-%     submitted,inpress,danish dutch,american,USenglish,english,%
-%     british,UKenglish,canadian,australian,newzealand,finnish,french,%
-%     francais,canadien,german,ngerman,austrian,naustrian,greek,%
-%     italian,norsk,nynorsk,brazil,portuges,spanish,swedish,%
-%     %
-%     biber,numeric,numeric-comp,numeric-verb,alphabetic,%
-%     alphabetic-verb,authoryear,authoryear-comp,authoryear-ibid,%
-%     authoryear-icomp,authortitle,authortitle-comp,authortitle-ibid,%
-%     authortitle-icomp,authortitle-terse,authortitle-tcomp,%
-%     authortitle-ticomp,verbose,verbose-ibid,verbose-note,%
-%     verbose-inote,verbose-trad1,verbose-trad2,verbose-trad3,%
-%     reading,draft,debug,%
-%     inline,footnote,superscript,plain,skipbib,%
-%     nyt,ynt,none,false%
-%   },%
-%   alsoletter={-123},%
-%   sensitive=true,%
-%   delim=*[directive]@
-%   %
-% }[keywords,directives,tex,comments]%
 %
 \lstdefinelanguage[csquotes]{TeX}[LaTeX]{TeX}%
 {%
@@ -780,10 +1000,10 @@ This work consists of the file  denisbdoc.dtx
     author,title,subtitle,academicfield,speciality,date,supervisor,cosupervisor,comonitor,%
     referee,guest,examiner,committeepresident,pres,institute,coinstitute,company,doctoralschool,%
     laboratory,dedication,frontepigraph,keywords,subject,expression,tableofcontents,submissiondate,%
-    maketitle,makedisclaimer,makekeywords,makelaboratory,makeabstract,makededications,makefrontepigraphs,%
+    maketitle,makedisclaimer,makekeywords,makelaboratory,makeabstract,makededications,%
+    makefrontepigraphs,makebackcover,ordernumber,chapter*,disclaimer,newglssymbol,yadsetup,%
+    comue,%
     % acknowledgements,frenchabstract,foreword,preface,caution,
-    makebackcover,ordernumber,chapter*,%
-    disclaimer,newglssymbol,yadsetup%
   },%
   % Environments' names
   morekeywords={%
@@ -794,14 +1014,14 @@ This work consists of the file  denisbdoc.dtx
     glossaries,otherlanguage%
   },%
   morekeywords=[2]{% Keys of key-value lists
-    professor,seniorresearcher,mcf,juniorresearcher,mcf*,%
+    professor,seniorresearcher,mcf,associateprofessor,juniorresearcher,mcf*,associateprofessor*,%
     juniorresearcher*,corporation,corps,male,female,%
     distinction,award,affiliation,sepcorpaffilfrench,affiliationsecondary,sepcorpaffilenglish,%
     logo,url,nologo,space,mainlanguage,secnumdepth,tocdepth,depth,version,output,logoheight,%
     address,telephone,fax,email,type,acronym,heading,nowarning,noerror,nofrontcover,role,%
     hyperfootnotes,hyperindex,plainpages,pdfpagemode,pdfpagelayout,locale,gray,frametitle,%
     graphicx,adjustbox,setspace,xcolor,datatool,titleps,draftwatermark,babel,datetime,%
-    bookmark,fncychap,%
+    bookmark,fncychap,localtocs,localbibs,localbibs*%
   },%
   morekeywords=[3]{% Values of key-value lists
     single,onehalf,double,doctor,yadsymbolstyle,%
@@ -809,7 +1029,7 @@ This work consists of the file  denisbdoc.dtx
     none,true,false,UseOutlines,TwoPageRight,UK,FR,dvipsnames,table,%
     Sonny,Lenny,Glenn,Conny,Rejne,Bjarne,PetersLenny,Bjornstrup,%
     screen,draft,inprogress,inprogress*,submitted,submitted*,final,paper,paper*,%
-    fbox,shadowbox,ovalbox,supervisor*,cosupervisor*,comonitor*,%
+    fbox,shadowbox,ovalbox,supervisor*,cosupervisor*,comonitor*%
   },%
   morekeywords=[4]{% Class and packages options
     warn,nodayofweek,unicode,nostamp,all,numbered,a4paper,leqno,fleqn,10pt,11pt,12pt,%
@@ -931,6 +1151,7 @@ This work consists of the file  denisbdoc.dtx
 %
 % \section{Settings}
 %
+%    \begin{macrocode}
 \hypersetup{colorlinks}%
 %
 \presetkeys{todonotes}{fancyline, color=white}{}%
@@ -945,12 +1166,28 @@ This work consists of the file  denisbdoc.dtx
 %
 \SetCiteCommand{\autocite}
 %
+%    \end{macrocode}
+%
+% The \pkg{kpfonts} and \pkg{libertine}'s ttfamilies are not as nice as
+% \pkg{lmodern}'s one to my taste. So let's use the latter.
+%    \begin{macrocode}
 \renewcommand{\ttdefault}{lmtt}
+%    \end{macrocode}
+%
+% \pkg{lmodern} doesn't provide extended bold italic typewritter, hence
+% a warning when a command such as \pkg{tcolorbox}' |\docAuxCommand| is used in
+% a italic context. To get rid of this warning, we silently substitute bold
+% slanted to extended bold italic.
+%    \begin{macrocode}
+{%
+  \ttfamily%
+  \DeclareFontShape{T1}{lmtt}{bx}{it}{<-> ssub * lmtt/b/sl}{}%
+}
 %
 % \renewcommand{\generalname}{Général}%
 %
-% \xapptocmd{\@chapter}{%
-\xapptocmd{\@section}{%
+\xapptocmd{\@chapter}{%
+% \xapptocmd{\@section}{%
   \addtocontents{dbwarninglist}{\protect\addvspace{10\p@}}%
   \addtocontents{dbremarklist}{\protect\addvspace{10\p@}}%
   \addtocontents{dbexamplelist}{\protect\addvspace{10\p@}}%
@@ -1020,7 +1257,8 @@ This work consists of the file  denisbdoc.dtx
     breakable,
     fonttitle=\bfseries,
     enlarge~top~by=1mm,
-    separator~sign~dash
+    separator~sign~dash,
+    label~separator=-
   }%
 }%
 %
@@ -1037,7 +1275,8 @@ This work consists of the file  denisbdoc.dtx
   /tcb/color~environment=environment,
   /tcb/color~key=key,
   /tcb/color~value=value,
-  index~format=pgfchapter,
+  % index~format=pgfchapter,
+  index~format=off,
   index~colorize,
   index~annotate=false,
   enhanced,
@@ -1046,8 +1285,6 @@ This work consists of the file  denisbdoc.dtx
 % index~actual={},
 % doc~left~indent=-15mm,
 % doc~right~indent=-15mm+2em
-% }%
-% \tcbset{%
   codes/.style={%
     listing~only,
     enlarge~top~by=\medskipamount,
@@ -1066,6 +1303,10 @@ This work consists of the file  denisbdoc.dtx
     % listing~options={rangebeginprefix=\\,rangeendsuffix=\}}
   }%
 }%
+\renewcommand*{\tcbdocnew}[1]{\scriptsize\sffamily\textcolor{green!50!black}{\bfseries
+Nouv.~:}~#1}
+\renewcommand*{\tcbdocupdated}[1]{\scriptsize\sffamily\textcolor{blue!75!black}{\bfseries
+\textsc{m.-à-j.}~:}~#1}
 %    \end{macrocode}
 %
 % Suppression du gras dans la commande ×\docAuxCommand× :
@@ -1073,15 +1314,6 @@ This work consists of the file  denisbdoc.dtx
 \def\disp@com#1{\colDef{\ttfamily#1}}
 %    \end{macrocode}
 %
-% For the \yatcl' documentation, using \Class{ltxdoc}, we need to
-% perform some changes in \Package{glossaries} provided by its author.
-%    \begin{macrocode}
-% \renewcommand*{\newacronymhook}{%
-%   \edef\tmp{\noexpand\textsc{\the\glsshorttok}}%
-%   \expandafter\glsshorttok\expandafter{\tmp}%
-% }%
-% \renewcommand*{\acrpluralsuffix}{\textup{\glspluralsuffix}}
-%    \end{macrocode}
 % On définit une nouvelle clé pour la commande ×\includegraphics× de
 % sorte à pouvoir inclure les pages d'un \File{.pdf} externe en
 % indiquant non pas des numéros de pages absolus, mais plutôt des
@@ -1100,6 +1332,34 @@ This work consists of the file  denisbdoc.dtx
 %
 % \subsection{Macros}
 %
+% We create a command that displays the translatation of expressions.
+%    \begin{macrocode}
+\NewDocumentCommand \translateexpression { sm }
+{
+  \enquote{\foreignlanguage{french}{\translate{#2}}}~
+  ou~
+  \enquote{\foreignlanguage{english}{\translate{#2}}}%
+  \IfBooleanF {#1}
+  {
+    \selonlangue%
+    \index{expression!en~français!\enquote{\foreignlanguage{french}{\translate{#2}}}}%
+    \index{expression!en~anglais!\enquote{\foreignlanguage{english}{\translate{#2}}}}%
+  }
+}
+%    \end{macrocode}
+%
+% Some hacks to avoid "\makeindex"'s “title” option from \pkg{imakeidx} ignored
+% if \pkg{tcolorbox}' indexation is used (see
+% \url{http://tex.stackexchange.com/q/332284/18401})).
+%    \begin{macrocode}
+\expandafter\AtBeginDocument\expandafter{%
+  \expandafter\def\expandafter\theindex\expandafter{\theindex}%
+}
+\expandafter\AtBeginDocument\expandafter{%
+  \expandafter\def\expandafter\endtheindex\expandafter{\endtheindex}%
+}
+%    \end{macrocode}
+%
 %    \begin{macrocode}
 \cs_new_protected:Nn \_@@_alert:n
 {
@@ -1112,18 +1372,66 @@ This work consists of the file  denisbdoc.dtx
 {
   \_@@_alert:n {#1}
 }%
-\cs_set_eq:NN \_@@_orig_changes \changes
+\makeindex[name=\jobname-changes,title=Historique~des~changements,options=-M~denisbdoc-chng.xdy]
 \DeclareDocumentCommand \changes { smmm } {
-  \_@@_orig_changes{#2}{#3}{%
-    \IfBooleanTF {#1}
-    {
-      \alert{#4}%
-    }
-    {
-      #4%
-    }
+  \IfBooleanTF {#1}
+  {
+    \tl_set:Nn \l_tmpa_tl {\alert{#4}}
+  }{
+    \tl_set:Nn \l_tmpa_tl {#4}
   }
+  \index[\jobname-changes]{\texttt{#2}~(#3)!\l_tmpa_tl}
 }
+\DeclareDocumentCommand \PrintChanges { o } {
+  \indexprologue{#1}
+%    \end{macrocode}
+%
+% The changes are printed in a numbered chapter hence subject to
+% cross-references.
+%    \begin{macrocode}
+  \def\imki@indexlevel{\chapter}
+  \printindex[\jobname-changes]
+  \def\imki@indexlevel{\chapter*}
+}
+% \@ifpackageloaded{doc}{%
+%   \renewcommand*{\changes@}[3]{%
+%     \protected@edef\@tempa{%
+%       \noexpand\glossary{\ttfamily#1\normalfont{}~(#2)\levelchar
+%         \ifx\saved@macroname\@empty
+%         \space\actualchar\generalname
+%         \else
+%         \expandafter\@gobble\saved@macroname
+%         \actualchar
+%         \string\verb\quotechar*\verbatimchar\saved@macroname\verbatimchar
+%         \fi
+%         :\levelchar #3}}%
+%     \@tempa
+%     \endgroup
+%     \@esphack
+%   }
+%   \cs_set_eq:NN \_@@_orig_changes \changes
+%   \DeclareDocumentCommand \changes { smmm } {
+%     \_@@_orig_changes{#2}{#3}{%
+%       \IfBooleanTF {#1}
+%       {
+%         \alert{#4}%
+%       }
+%       {
+%         #4%
+%       }
+%     }
+%   }
+% }{%
+% }
+%    \end{macrocode}
+%
+% In case of French language, we ask the plain style of \Package{csquotes} to be
+% the right ones.
+%    \begin{macrocode}
+\IfLanguageName{french}{%
+  \DeclarePlainStyle{«~}{~»}%
+                    {“}{”}
+}{}%
 %    \end{macrocode}
 %
 % The following hack was provided by Clemens Niederberger
@@ -1134,46 +1442,78 @@ This work consists of the file  denisbdoc.dtx
 \tl_const:Nx \c_@@_standard_url_tl { \tl_to_str:n { http://www.ctan.org/pkg/ } }
 %    \end{macrocode}
 % Separate formatting:
-\cs_new_protected:Npn \_@@_package_format:n #1
-  { \textsf {#1} }
+% #1: package or class name
+% #2: extra argument (e.g. font attribute)
+\cs_new_protected:Npn \_@@_package_format:nn #1#2
+{
+  #2{\sffamily#1}
+}
 % The main macro
 %   #1: boolean (true => no hyperlink)
-%   #2: optional url
-%   #3: package name
-\cs_new_protected:Npn \_@@_package:nnn #1#2#3
+%   #2: boolean (false => indexation)
+%   #3: optional url
+%   #4: package or class name
+%   #5: index main entry (if #5 false)
+%   #6: index subsubentry (if #5 false)
+%   #7: extra argument for the package or class name (e.g. font attribute)
+\cs_new_protected:Npn \_@@_package:nnnnnnn #1#2#3#4#5#6#7
+{
+  \texorpdfstring
   {
-    \texorpdfstring
+    \bool_if:nTF {#1}
+    { \_@@_package_format:nn {#4}{#7} }
+    {
+      \tl_if_blank:nTF {#3}
       {
-        \bool_if:nTF {#1}
-          { \_@@_package_format:n {#3} }
-          {
-            \tl_if_blank:nTF {#2}
-              {
-                \href
-                  { \c_@@_standard_url_tl #3}
-                  { \_@@_package_format:n {#3} }
-              }
-              { \href {#2} { \_@@_package_format:n {#3} } }
-          }
+        \tl_set:Nx \l_tmpa_tl {\c_@@_standard_url_tl #4}
+        \href
+        { \l_tmpa_tl }
+        { \_@@_package_format:nn {#4}{#7} }
       }
-      {#3}
+      {
+        \href
+        { #3 }
+        { \_@@_package_format:nn {#4}{#7} }
+      }
+    }
+    \IfBooleanF{#2}
+    {
+      \tl_if_empty:nTF {#6}
+      {
+        \index{#5!liste!\textsf{#4}}
+      }{
+        \index{#5!liste!\textsf{#4}!#6}
+      }
+    }
   }
-\NewDocumentCommand{\package}{ s O{} m } {
-  \_@@_package:nnn {#1}{#2}{#3}
+  {#4}
 }
-\NewDocumentCommand{\Package}{ s O{} m } {
+\NewDocumentCommand{\package}{ s t+ O{} m O{package} O{} O{} } {
+  \_@@_package:nnnnnnn {#1}{#2}{#3}{#4}{package}{#6}{#7}
+}
+\NewDocumentCommand{\Package}{ s t+ O{} m O{package} O{} O{} } {
   \IfLanguageName{french}{package~}{}%
-  \_@@_package:nnn {#1}{#2}{#3}
+  \_@@_package:nnnnnnn {#1}{#2}{#3}{#4}{package}{#6}{#7}
   \IfLanguageName{english}{~package}{}%
 }
 %
-\NewDocumentCommand{\class}{ s O{} m } {
-  \_@@_package:nnn {#1}{#2}{#3}
+\NewDocumentCommand{\class}{ s t+ O{} m O{} O{} O{} } {
+  \IfLanguageName{french}{%
+    \_@@_package:nnnnnnn {#1}{#2}{#3}{#4}{classe}{#6}{#7}
+  }{}%
+  \IfLanguageName{english}{%
+    \_@@_package:nnnnnnn {#1}{#2}{#3}{#4}{class}{#6}{#7}
+  }{}%
 }
-\NewDocumentCommand{\Class}{ s O{} m } {
-  \IfLanguageName{french}{classe~}{}%
-  \_@@_package:nnn {#1}{#2}{#3}
-  \IfLanguageName{english}{~class}{}%
+\NewDocumentCommand{\Class}{ s t+ O{} m O{} O{} O{} } {
+  \IfLanguageName{french}{%
+    classe~%
+    \_@@_package:nnnnnnn {#1}{#2}{#3}{#4}{classe}{#6}{#7}
+  }{}%
+  \IfLanguageName{english}{%
+    \_@@_package:nnnnnnn {#1}{#2}{#3}{#4}{class}{#6}{#7}
+    ~class
+  }{}%
 }
 %
 \cs_new_protected:Nn \_@@_format:n
@@ -1220,6 +1560,34 @@ This work consists of the file  denisbdoc.dtx
 \NewDocumentCommand{\program}{ m }
 {
   \_@@_file:n {#1}%
+}
+\NewDocumentCommand{\texstudio}{  }
+{
+  \program{TeXstudio}\xspace
+}
+\NewDocumentCommand{\emacs}{  }
+{
+  \program{Emacs}\xspace
+}
+\NewDocumentCommand{\texlive}{ }
+{
+  \TeX{}\space{}Live\xspace
+}
+\NewDocumentCommand{\miktex}{ }
+{
+  MiK\TeX\xspace
+}
+\NewDocumentCommand{\linux}{ }
+{
+  Linux\index{Linux}\xspace
+}
+\NewDocumentCommand{\macos}{ }
+{
+  Mac OS\index{Mac OS}\xspace
+}
+\NewDocumentCommand{\windows}{ }
+{
+  Windows\index{Windows}\xspace
 }
 %
 \cs_new_protected:Nn \_@@_links:nnn
@@ -1360,6 +1728,13 @@ This work consists of the file  denisbdoc.dtx
 %    \end{macrocode}
 %
 %    \begin{macrocode}
+\NewDocumentCommand{\version}{ m }
+{
+  Version~\texttt{#1}
+}
+%    \end{macrocode}
+%
+%    \begin{macrocode}
 \NewDocumentCommand{\pdf}{}
 {
   \textsc{pdf}
@@ -1401,14 +1776,60 @@ This work consists of the file  denisbdoc.dtx
 % \Package{zref} avec l'option ×xr× dans le \File{.tex} où sont
 % incluses les pages du \File{.pdf} externe.
 %    \begin{macrocode}
-\zexternaldocument{\c_@@_flatsample_string_tl/these}%
-\cs_new_protected:Nn \_@@_screenshot:nn
-{
-  \fbox{\includegraphics[bylabel=#2,width=#1\linewidth-2\fboxsep-2\fboxrule]{\c_@@_flatsample_string_tl/these}}%
+\bool_if:nT {\g_@@_yad_bool} {%
+  \zexternaldocument{\c_@@_flatsample_string_tl/these}%
+  \bool_new:N \g_@@_these_aux_exists
+  \msg_new:nnn{denisbdoc}{File~these.aux~needed}{%
+    File ~`these.aux' ~needed ~(otherwise ~this ~document ~will ~be ~incomplete)!\space
+    ~Please ~go ~to ~`\c_@@_flatsample_string_tl'\space
+    directory ~and ~run~first:\\\\
+
+    \ \ latexmk ~-f ~-pdf ~-jobname=these ~-pdflatex="pdflatex ~\%O ~ \string\ \\
+    \ \ '\string\RequirePackage\{etoolbox\}   ~ \string\ \\
+    \ \ \string\AtEndPreamble\{\string\RequirePackage\{yathesis-demo\}\}  ~ \string\ \\
+    \ \ \string\input\{\%S\}'"~these.tex
+    \\\\
+    Afterwards,~recompile~this~document.%
+  }%
+  \file_if_exist:nTF {\c_@@_flatsample_string_tl/these.aux} {
+    \bool_gset_true:N \g_@@_these_aux_exists
+  }{
+    % \bool_gset_false:N \g_@@_these_aux_exists
+    \msg_warning:nn{denisbdoc}{File~these.aux~needed}
+    \AfterEndPreamble{%
+      \begin{dbwarning}{Documentation~incomplète~!}{documentation-incomplete}
+        La ~présente ~documentation ~est ~incomplète ~car ~le ~\File{these.aux}\space
+        ~est ~absent ~du ~\Folder{specimen/a-plat}. ~Pour ~régler ~le ~problème,\space
+        ~rendez-vous ~dans ~ce ~dossier ~et ~compilez ~le ~\File{these.tex} ~au\space
+        ~moyen ~de ~la ~commande ~suivante ~(sur ~une ~seule ~ligne) ~:\par\medskip
+
+        \lstinline[language=bash,upquote=true,commentstyle=,stringstyle=,showstringspaces=false]+latexmk~-f~-pdf~-jobname=these~-pdflatex="pdflatex~\%O~'\\RequirePackage\{etoolbox\}\\AtEndPreamble\{\\RequirePackage\{yathesis-demo\}\}\\input\{\%S\}'"~these+
+      \end{dbwarning}
+    }
+  }
+  \cs_new_protected:Nn \_@@_screenshot:nn
+  {
+    \bool_if:NTF {\g_@@_these_aux_exists} {
+      \fbox{\includegraphics[bylabel=#2,width=#1\linewidth-2\fboxsep-2\fboxrule]{\c_@@_flatsample_string_tl/these}}%
+    }{%
+      \begin{dbwarning}{Copie~d'écran~manquante~!}{}
+        Il ~devrait ~ici ~y ~avoir ~une ~copie\space
+        ~d'écran. ~Cf. ~\vref{wa-documentation-incomplete} ~pour ~plus ~de\space
+        ~détails.
+      \end{dbwarning}
+    }
+  }
+  \NewDocumentCommand \screenshot { O{.45} m } {%
+    \_@@_screenshot:nn {#1}{#2}
+  }
 }
-\NewDocumentCommand \screenshot { O{.45} m } {%
-  \_@@_screenshot:nn {#1}{#2}
-}
+%    \end{macrocode}
+%
+% In order to get rid of the warning "PDF inclusion: multiple pdfs with page
+% group included in a single page" (see
+% \url{http://tex.stackexchange.com/q/183149/18401}).
+%    \begin{macrocode}
+\pdfsuppresswarningpagegroup=1
 %    \end{macrocode}
 %
 %    \begin{macrocode}
@@ -1497,13 +1918,13 @@ This work consists of the file  denisbdoc.dtx
 \newtcbtheorem[list~inside=dbfaqlist,number~within=\g_@@_number_within_tl,crefname={question}{questions}]{dbfaq}{Question}{%
   colback=lightgray!5!white,
   colframe=lightgray!75!black,
-  fontupper=\slshape,
+  fontupper=\itshape,
   dbtcb
 }{faq}
 \newtcbtheorem[list~inside=dbtabularlist,number~within=\g_@@_number_within_tl,crefname={tableau}{tableaux}]{dbtab}{Tableau}{%
   colback=purple!5!white,
   colframe=purple!75!black,
-  fontupper=\slshape,
+  fontupper=\itshape,
   dbtcb
 }{tab}
 %    \end{macrocode}
@@ -1575,15 +1996,19 @@ This work consists of the file  denisbdoc.dtx
 %    \begin{macrocode}
 \NewDocumentCommand \yat { }
 {%
-  \textsl{\texttt{\c_@@_yat_class_name_tl}}\xspace
+  \textsl{\textsf{\c_@@_yat_class_name_tl}}
 }
 \NewDocumentCommand \yatpa { }
 {%
-  \Package{\yat}\xspace
+  \Package+{\c_@@_yat_class_name_tl}[\itshape][]\xspace
 }
 \NewDocumentCommand \yatcl { }
 {%
-  \texorpdfstring{\Class{\yat}\xspace}{classe yathesis}
+  \texorpdfstring{\class+{\c_@@_yat_class_name_tl}[][][\itshape]\xspace}{yathesis}
+}
+\NewDocumentCommand \yatCl { }
+{%
+  \texorpdfstring{\Class+{\c_@@_yat_class_name_tl}[][][\itshape]\xspace}{classe yathesis}
 }
 %    \end{macrocode}
 % \end{macro}
@@ -1666,7 +2091,7 @@ This work consists of the file  denisbdoc.dtx
 }
 \NewDocumentCommand \gztauthorcl { }
 {%
-  \Class{\gztauthor}
+  \Class+[http://ctan.org/pkg/gzt]{\gztauthor}
 }
 %    \end{macrocode}
 % \end{macro}
@@ -1709,6 +2134,19 @@ This work consists of the file  denisbdoc.dtx
 % \end{macro}
 % \end{macro}
 %
+% We PDFdisable some commands in order to avoid troubles in bookmarks.
+%    \begin{macrocode}
+\pdfstringdefDisableCommands{%
+  \let\textcolor\@gobble
+  \def\yatcl{yathesis}
+  \def\yatCl{classe~yathesis}
+  \def\program#1{#1}
+}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
 % We switch to a \enquote{normal} category code régime.
 %    \begin{macrocode}
 \ExplSyntaxOff
@@ -1716,6 +2154,92 @@ This work consists of the file  denisbdoc.dtx
 %
 %    \begin{macrocode}
 %</package>
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+%<*xindy-style>
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+;; (define-attributes ("example"))
+;; (define-attributes ("definition"))
+(define-attributes (("default" "definition" "example")))
+(define-attributes ("textsf"))
+(markup-locref :open "\hyperpage{" :close "}" :attr "default")
+(markup-locref :open "\textbf{\hyperpage{" :close "}}" :attr "definition")
+(markup-locref :open "\textit{\hyperpage{" :close "}}" :attr "textit")
+(markup-locref :open "\textsf{\hyperpage{" :close "}}" :attr "textsf")
+(markup-locref :open "\emph{\hyperpage{" :close "}}" :attr "example")
+
+(markup-crossref-list :class "see" :open "\seelink{" :sep "; " :close "}{}")
+
+(define-crossref-class "hyperindexformat")
+(markup-crossref-list :class "hyperindexformat" :open
+      "\hyperindexformat{" :sep "; " :close "}{}")
+
+;; (merge-to "definition" "default" :drop)
+
+(markup-locref :open "\hyperpage{" :close "}")
+(markup-locref :open "\hyperpage{" :close "}" :attr "hyperpage")
+
+
+(markup-keyword-list :open "\targetindexentry{" :close "}" )
+(markup-keyword-list :open "\targetindexentryi{" :close "}" :depth 1)
+(markup-keyword-list :open "\targetindexentryii{" :close "}" :depth 2)
+
+(markup-index :open  "~n
+% \bookmarksetup{open}
+\clearpage
+\phantomsection
+\begin{theindex}
+  \providecommand*\lettergroupDefault[1]{}
+  \providecommand*\lettergroup[1]{%
+    \belowpdfbookmark{#1}{\csuse{DBD@index@symbolic@name}:#1}%
+    \par\indexheading{#1}{\csuse{DBD@index@symbolic@name}}\par
+    \nopagebreak
+  }
+  ~n"
+  :close "~n~n\end{theindex}~n"
+:tree)
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+%</xindy-style>
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+%<*xindy-style-chng>
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+(define-crossref-class "hyperindexformat")
+(markup-crossref-list :class "hyperindexformat" :open
+      "\hyperindexformat{" :sep "; " :close "}{}")
+
+(markup-locref :open "\hyperpage{" :close "}")
+
+
+(markup-locref-list :sep ", ")
+(markup-locclass-list :open "\dotfill " :close "" )
+
+% (markup-keyword-list :open "{\small " :close "}" )
+% (markup-keyword-list :open "{\small " :close "}" :depth 1)
+% (markup-keyword-list :open "{\small " :close "}" :depth 2)
+
+(markup-index :open  "~n
+\clearpage
+\phantomsection
+\begin{theindex}
+  \small
+  \providecommand*\lettergroupDefault[1]{}
+  \providecommand*\lettergroup[1]{}
+  ~n"
+  :close "~n~n\end{theindex}~n"
+:tree)
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+%</xindy-style-chng>
 %    \end{macrocode}
 %
 % \end{implementation}
