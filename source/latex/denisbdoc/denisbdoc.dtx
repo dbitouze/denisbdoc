@@ -1368,6 +1368,50 @@ Nouv.~:}~#1}
 }
 %    \end{macrocode}
 %
+% Hack of \pkg{imakeidx} in order different indices have different extensions
+% that can be taken in account by \pkg{latexmk}'s custom dependencies and
+% subroutine (see \url{http://tex.stackexchange.com/q/336653/18401}). The
+% extensions of input and output files are specified by new |extin| and |extout|
+% options of |\makeindex|.
+%    \begin{macrocode}
+\ExplSyntaxOff
+\def\imki@finalmessage#1{}% since you're using latexmk
+\def\imki@startidx#1#2{%
+  \if@filesw
+    \def\index{\@bsphack
+      \@ifnextchar [{\@index}{\@index[\imki@jobname]}}
+    \expandafter\newwrite\csname #1@idxfile\endcsname
+    \immediate\openout \csname #1@idxfile\endcsname #1.#2\relax
+    \typeout{Writing index file #1.#2}%
+  \fi}
+\xpatchcmd\imki@makeindex
+  {\imki@startidx\imki@name}
+  {\imki@startidx\imki@name\imki@extout}
+  {}{}
+\xpatchcmd\imki@build
+  {\imki@dokey\imki@title}
+  {\imki@dokey\imki@title
+   \imki@dokey\imki@extin
+   \imki@dokey\imki@extout}
+  {}{}
+\xpatchcmd{\imki@putindex}
+  {\imki@options}
+  {\space~ -o~ #1.\imki@extin\imki@options}
+  {}{}
+\xpatchcmd{\imki@putindex}
+  {.idx}
+  {.\imki@extout}
+  {}{}
+\xpatchcmd{\imki@putindex}
+  {.ind}
+  {.\imki@extin}
+  {}{}
+\def\imki@extout{idx}\def\imki@extin{ind}
+\define@key{imki}{extout}{\def\imki@extout{#1}}
+\define@key{imki}{extin}{\def\imki@extin{#1}}
+\ExplSyntaxOn
+%    \end{macrocode}
+%
 %    \begin{macrocode}
 \cs_new_protected:Nn \_@@_alert:n
 {
