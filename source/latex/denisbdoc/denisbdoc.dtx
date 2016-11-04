@@ -3,7 +3,7 @@
 \iffalse
 %</internal>
 %<*readme>
-denisbdoc - A personal package for documenting classes and packages, v. 0.4
+denisbdoc - A personal package for documenting classes and packages, v. 0.5
 ===========================================================================
 
 **The (quick 'n dirty) `denisbdoc` package is just for documenting the classes
@@ -30,7 +30,7 @@ This package is currently not documented.
 \askforoverwritefalse
 \preamble
 -----------------------------------------------------------------------------
-denisbdoc --- A personal dirty package for documenting packages, version 0.4
+denisbdoc --- A personal dirty package for documenting packages, version 0.5
 
 Maintained by Denis Bitouz'e
 E-mail: denis.bitouze@lmpa.univ-littoral.fr
@@ -119,6 +119,7 @@ This work consists of the file  denisbdoc.dtx
 %\changes{v0.2}{2016/04/04}{Second CTAN version}
 %\changes{v0.3}{2016/06/10}{Third CTAN version}
 %\changes{v0.4}{2016/10/24}{Fourth CTAN version}
+%\changes{v0.5}{2016/10/30}{Fifth CTAN version}
 %
 %\begin{abstract}
 % ...
@@ -189,7 +190,7 @@ This work consists of the file  denisbdoc.dtx
 %
 % The usual preliminaries.
 %    \begin{macrocode}
-\ProvidesExplPackage {denisbdoc} {2016/10/24} {0.4}
+\ProvidesExplPackage {denisbdoc} {2016/10/30} {0.5}
   {A personal package for documenting packages}
 %    \end{macrocode}
 %
@@ -369,7 +370,7 @@ This work consists of the file  denisbdoc.dtx
 \@ifpackageloaded{glossaries}{%
 }{%
   % \RequirePackage{glossaries}%
-  \RequirePackage[hyperfirst=false,toc=false]{glossaries-extra}%
+  \RequirePackage[xindy,hyperfirst=false,toc=false]{glossaries-extra}%
   \makeglossaries%
   \setglossarystyle{indexhypergroup}%
   \setabbreviationstyle[acronym]{long-short-sc}%
@@ -597,12 +598,19 @@ This work consists of the file  denisbdoc.dtx
 \attachfilesetup{color=Hyperlink}
 %    \end{macrocode}
 %
+% In order to get \pkg{titleps}' header in index to include current index entry,
+% we define the following |\indexmark| command
+% (cf. \url{http://tex.stackexchange.com/q/335522/18401}) that will be inserted
+% inside the (level 0) |\targetindexentry| command below.
+%    \begin{macrocode}
+\newcommand{\indexmark}[1]{\hypertarget{index:#1}{#1}\markboth{#1}{#1}}
+%    \end{macrocode}
+%
 % In order to get \pkg{hyperref} and \pkg{xindy} work nicely together
 % (cf. \url{http://geekographie.maieul.net/172}).
 %    \begin{macrocode}
-% \newcounter{target}
-% \newcommand{\targetindexentry}[1]{\hypertarget{\thetarget:index:#1}{#1}}
-\newcommand{\targetindexentry}[1]{\hypertarget{index:#1}{#1}}
+% \newcommand{\targetindexentry}[1]{\hypertarget{index:#1}{#1}}
+\newcommand{\targetindexentry}[1]{\indexmark{#1}}
 \newcounter{targeti}
 \newcommand{\targetindexentryi}[1]{\stepcounter{targeti}\hypertarget{\thetargeti:index:#1}{#1}}
 \newcounter{targetii}
@@ -1372,7 +1380,6 @@ Nouv.~:}~#1}
 {
   \_@@_alert:n {#1}
 }%
-\makeindex[name=\jobname-changes,title=Historique~des~changements,options=-M~denisbdoc-chng.xdy]
 \DeclareDocumentCommand \changes { smmm } {
   \IfBooleanTF {#1}
   {
@@ -1380,7 +1387,11 @@ Nouv.~:}~#1}
   }{
     \tl_set:Nn \l_tmpa_tl {#4}
   }
+  \ifx\@onlypreamble\@notprerr
   \index[\jobname-changes]{\texttt{#2}~(#3)!\l_tmpa_tl}
+  \else
+  \index[\jobname-changes]{\texttt{#2}~(#3)!\emph{Globalement}!\l_tmpa_tl|gobble}
+  \fi
 }
 \DeclareDocumentCommand \PrintChanges { o } {
   \indexprologue{#1}
@@ -1511,8 +1522,8 @@ Nouv.~:}~#1}
     \_@@_package:nnnnnnn {#1}{#2}{#3}{#4}{classe}{#6}{#7}
   }{}%
   \IfLanguageName{english}{%
-    \_@@_package:nnnnnnn {#1}{#2}{#3}{#4}{class}{#6}{#7}
-    ~class
+    \_@@_package:nnnnnnn {#1}{#2}{#3}{#4}{class}{#6}{#7}~%
+    class
   }{}%
 }
 %
@@ -1571,11 +1582,11 @@ Nouv.~:}~#1}
 }
 \NewDocumentCommand{\texlive}{ }
 {
-  \TeX{}\space{}Live\xspace
+  \href{http://www.tug.org/texlive/}{\TeX{}\space{}Live}\xspace
 }
 \NewDocumentCommand{\miktex}{ }
 {
-  MiK\TeX\xspace
+  \href{http://www.tug.org/texlive/}{MiK\TeX}\xspace
 }
 \NewDocumentCommand{\linux}{ }
 {
@@ -2189,8 +2200,6 @@ Nouv.~:}~#1}
 
 (markup-index :open  "~n
 % \bookmarksetup{open}
-\clearpage
-\phantomsection
 \begin{theindex}
   \providecommand*\lettergroupDefault[1]{}
   \providecommand*\lettergroup[1]{%
@@ -2218,9 +2227,12 @@ Nouv.~:}~#1}
 
 (markup-locref :open "\hyperpage{" :close "}")
 
-
 (markup-locref-list :sep ", ")
-(markup-locclass-list :open "\dotfill " :close "" )
+(markup-locclass-list :open "\hspace*{\fill}\nobreakspace" :close "" )
+
+(define-attributes (("gobble" "default")))
+(markup-locref  :open "\makeatletter\@gobble{" :close "}\makeatother" :attr "gobble")
+% (markup-locclass-list :open "" :sep "")
 
 % (markup-keyword-list :open "{\small " :close "}" )
 % (markup-keyword-list :open "{\small " :close "}" :depth 1)
