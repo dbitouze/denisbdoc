@@ -6,7 +6,7 @@
 %%
 %% denisbdoc.dtx  (with options: `package')
 %% -----------------------------------------------------------------------------
-%% denisbdoc --- A personal dirty package for documenting packages, version 0.4
+%% denisbdoc --- A personal dirty package for documenting packages, version 0.5
 %% 
 %% Maintained by Denis Bitouz'e
 %% E-mail: denis.bitouze@lmpa.univ-littoral.fr
@@ -15,7 +15,7 @@
 %% -----------------------------------------------------------------------------
 %% 
 \RequirePackage{expl3,l3keys2e,xparse}
-\ProvidesExplPackage {denisbdoc} {2016/10/24} {0.4}
+\ProvidesExplPackage {denisbdoc} {2016/10/30} {0.5}
   {A personal package for documenting packages}
 \@ifpackagelater { expl3 } { 2012/11/21 }
   { }
@@ -129,7 +129,7 @@
 \@ifpackageloaded{glossaries}{%
 }{%
   % \RequirePackage{glossaries}%
-  \RequirePackage[hyperfirst=false,toc=false]{glossaries-extra}%
+  \RequirePackage[xindy,hyperfirst=false,toc=false]{glossaries-extra}%
   \makeglossaries%
   \setglossarystyle{indexhypergroup}%
   \setabbreviationstyle[acronym]{long-short-sc}%
@@ -209,7 +209,8 @@
 { commandshell}{#1}
 \usetikzlibrary{trees,backgrounds,fit,calc,positioning}
 \attachfilesetup{color=Hyperlink}
-\newcommand{\targetindexentry}[1]{\hypertarget{index:#1}{#1}}
+\newcommand{\indexmark}[1]{\hypertarget{index:#1}{#1}\markboth{#1}{#1}}
+\newcommand{\targetindexentry}[1]{\indexmark{#1}}
 \newcounter{targeti}
 \newcommand{\targetindexentryi}[1]{\stepcounter{targeti}\hypertarget{\thetargeti:index:#1}{#1}}
 \newcounter{targetii}
@@ -751,6 +752,42 @@ Nouv.~:}~#1}
 \expandafter\AtBeginDocument\expandafter{%
   \expandafter\def\expandafter\endtheindex\expandafter{\endtheindex}%
 }
+\ExplSyntaxOff
+\def\imki@finalmessage#1{}% since you're using latexmk
+\def\imki@startidx#1#2{%
+  \if@filesw
+    \def\index{\@bsphack
+      \@ifnextchar [{\@index}{\@index[\imki@jobname]}}
+    \expandafter\newwrite\csname #1@idxfile\endcsname
+    \immediate\openout \csname #1@idxfile\endcsname #1.#2\relax
+    \typeout{Writing index file #1.#2}%
+  \fi}
+\xpatchcmd\imki@makeindex
+  {\imki@startidx\imki@name}
+  {\imki@startidx\imki@name\imki@extout}
+  {}{}
+\xpatchcmd\imki@build
+  {\imki@dokey\imki@title}
+  {\imki@dokey\imki@title
+   \imki@dokey\imki@extin
+   \imki@dokey\imki@extout}
+  {}{}
+\xpatchcmd{\imki@putindex}
+  {\imki@options}
+  {\space~ -o~ #1.\imki@extin\imki@options}
+  {}{}
+\xpatchcmd{\imki@putindex}
+  {.idx}
+  {.\imki@extout}
+  {}{}
+\xpatchcmd{\imki@putindex}
+  {.ind}
+  {.\imki@extin}
+  {}{}
+\def\imki@extout{idx}\def\imki@extin{ind}
+\define@key{imki}{extout}{\def\imki@extout{#1}}
+\define@key{imki}{extin}{\def\imki@extin{#1}}
+\ExplSyntaxOn
 \cs_new_protected:Nn \__denisbdoc_alert:n
 {
   \begingroup
@@ -762,7 +799,6 @@ Nouv.~:}~#1}
 {
   \__denisbdoc_alert:n {#1}
 }%
-\makeindex[name=\jobname-changes,title=Historique~des~changements,options=-M~denisbdoc-chng.xdy]
 \DeclareDocumentCommand \changes { smmm } {
   \IfBooleanTF {#1}
   {
@@ -770,9 +806,13 @@ Nouv.~:}~#1}
   }{
     \tl_set:Nn \l_tmpa_tl {#4}
   }
+  \ifx\@onlypreamble\@notprerr
   \index[\jobname-changes]{\texttt{#2}~(#3)!\l_tmpa_tl}
+  \else
+  \index[\jobname-changes]{\texttt{#2}~(#3)!\emph{Globalement}!\l_tmpa_tl|gobble}
+  \fi
 }
-\DeclareDocumentCommand \PrintChanges { o } {
+\DeclareDocumentCommand \PrintChanges { O{} } {
   \indexprologue{#1}
   \def\imki@indexlevel{\chapter}
   \printindex[\jobname-changes]
@@ -841,8 +881,8 @@ Nouv.~:}~#1}
     \__denisbdoc_package:nnnnnnn {#1}{#2}{#3}{#4}{classe}{#6}{#7}
   }{}%
   \IfLanguageName{english}{%
-    \__denisbdoc_package:nnnnnnn {#1}{#2}{#3}{#4}{class}{#6}{#7}
-    ~class
+    \__denisbdoc_package:nnnnnnn {#1}{#2}{#3}{#4}{class}{#6}{#7}~%
+    class
   }{}%
 }
 \cs_new_protected:Nn \__denisbdoc_format:n
@@ -899,11 +939,11 @@ Nouv.~:}~#1}
 }
 \NewDocumentCommand{\texlive}{ }
 {
-  \TeX{}\space{}Live\xspace
+  \href{http://www.tug.org/texlive/}{\TeX{}\space{}Live}\xspace
 }
 \NewDocumentCommand{\miktex}{ }
 {
-  MiK\TeX\xspace
+  \href{http://www.tug.org/texlive/}{MiK\TeX}\xspace
 }
 \NewDocumentCommand{\linux}{ }
 {
