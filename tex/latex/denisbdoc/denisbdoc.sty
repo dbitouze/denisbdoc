@@ -207,6 +207,31 @@
 \reversemarginpar
 \DeclareTotalTCBox{\commandshell}{  v  }
 { commandshell}{#1}
+\newtcblisting{listingshell}[1][]{%
+  % colback=black,
+  % colupper=white,
+  colback=white,
+  colupper=black,
+  colframe=yellow!75!black,
+  breakable,
+  listing only,
+  listing options={%
+    style=tcblatex,
+    language=bash,
+    escapeinside={(*@}{@*)},
+    upquote=true,
+    showstringspaces=false
+  },
+  every listing line={%
+    \textcolor{red}{%
+      \small\ttfamily\bfseries%
+      \BeginAccSupp{method=plain,ActualText={}}
+      \$
+      \EndAccSupp{}%
+    }
+  },
+  #1
+}
 \usetikzlibrary{trees,backgrounds,fit,calc,positioning}
 \attachfilesetup{color=Hyperlink}
 \newcommand{\indexmark}[1]{\hypertarget{index:#1}{#1}\markboth{#1}{#1}}
@@ -249,12 +274,15 @@
 \ExplSyntaxOn
 \DeclareUrlCommand\urldirectory{\urlstyle{tt}}
 \ExplSyntaxOn
-\tl_const:Nn \c__denisbdoc_template_string_tl {../exemples/canevas}
-\tl_const:Nn \c__denisbdoc_sample_string_tl {../exemples/specimen}
+\tl_const:Nn \c__denisbdoc_examples_path_tl {../exemples}
+\tl_const:Nn \c__denisbdoc_template_string_tl {\c__denisbdoc_examples_path_tl/canevas}
+\tl_const:Nn \c__denisbdoc_sample_string_tl {\c__denisbdoc_examples_path_tl/specimen}
 \tl_const:Nn \c__denisbdoc_flattemplate_string_tl {\c__denisbdoc_template_string_tl/a-plat}
 \tl_const:Nn \c__denisbdoc_flatsample_string_tl {\c__denisbdoc_sample_string_tl/a-plat}
 \tl_const:Nn \c__denisbdoc_treetemplate_string_tl {\c__denisbdoc_template_string_tl/en-arborescence}
 \tl_const:Nn \c__denisbdoc_treesample_string_tl {\c__denisbdoc_sample_string_tl/en-arborescence}
+\tl_const:Nn \c__denisbdoc_template_sample_zip_string_tl {canevas-specimen.zip}
+\tl_const:Nn \c__denisbdoc_these_aux_string_tl {these.aux}
 \tl_const:Nn \c__denisbdoc_unixtldirectory_string_tl {/usr/local/}
 \tl_const:Nn \c__denisbdoc_tlversion_string_tl {2016}
 \tl_const:Nn \c__denisbdoc_wintldirectory_string_tl {c:/}
@@ -1108,45 +1136,72 @@ Nouv.~:}~#1}
   }
 }
 \bool_if:nT {\g__denisbdoc_yad_bool} {%
+  %
   \zexternaldocument{\c__denisbdoc_flatsample_string_tl/these}%
-  \bool_new:N \g__denisbdoc_these_aux_exists
-  \msg_new:nnn{denisbdoc}{File~these.aux~needed}{%
-    File ~`these.aux' ~needed ~(otherwise ~this ~document ~will ~be ~incomplete)!\space
-    ~Please ~go ~to ~`\c__denisbdoc_flatsample_string_tl'\space
-    directory ~and ~run~first:\\\\
+  \bool_new:N \g__denisbdoc_these_aux_exists%
+  \msg_new:nnn{denisbdoc}{File~ `\c__denisbdoc_these_aux_string_tl'~ needed}{%
+    File~ `\c__denisbdoc_these_aux_string_tl'~ needed~ (otherwise~ this~ document~ will~
+    be~ incomplete)!~ Please~ go~ to~ `\c__denisbdoc_flatsample_string_tl'~
+    directory~ and~ run~ first:\\\\
 
-    \ \ latexmk ~-f ~-pdf ~-jobname=these ~-pdflatex="pdflatex ~\%O ~ \string\ \\
-    \ \ '\string\RequirePackage\{etoolbox\}   ~ \string\ \\
-    \ \ \string\AtEndPreamble\{\string\RequirePackage\{yathesis-demo\}\}  ~ \string\ \\
-    \ \ \string\input\{\%S\}'"~these.tex
+    \ \ latexmk~ -g~ -pdf~ -jobname=these~ -pdflatex="pdflatex~ \%O~ \string\ \\
+    \ \ '\string\RequirePackage\{etoolbox\}~ \string\ \\
+    \ \ \string\AtEndPreamble\{\string\RequirePackage\{yathesis-demo\}\}~ \string\ \\
+    \ \ \string\input\{\%S\}'"~ these.tex
     \\\\
-    Afterwards,~recompile~this~document.%
+    Afterwards,~ recompile~ this~ document.%
   }%
-  \file_if_exist:nTF {\c__denisbdoc_flatsample_string_tl/these.aux} {
-    \bool_gset_true:N \g__denisbdoc_these_aux_exists
-  }{
+  \file_if_exist:nTF {\c__denisbdoc_flatsample_string_tl/\c__denisbdoc_these_aux_string_tl} { \bool_gset_true:N
+    \g__denisbdoc_these_aux_exists }{
     % \bool_gset_false:N \g__denisbdoc_these_aux_exists
-    \msg_warning:nn{denisbdoc}{File~these.aux~needed}
+    \msg_warning:nn{denisbdoc}{File~ `\c__denisbdoc_these_aux_string_tl'~ needed}
     \AfterEndPreamble{%
       \begin{dbwarning}{Documentation~incomplète~!}{documentation-incomplete}
-        La ~présente ~documentation ~est ~incomplète ~car ~le ~\File{these.aux}\space
-        ~est ~absent ~du ~\Folder{specimen/a-plat}. ~Pour ~régler ~le ~problème,\space
-        ~rendez-vous ~dans ~ce ~dossier ~et ~compilez ~le ~\File{these.tex} ~au\space
-        ~moyen ~de ~la ~commande ~suivante ~(sur ~une ~seule ~ligne) ~:\par\medskip
+        La~ présente~ documentation~ est~ incomplète~ car~ le~
+        \File{\c__denisbdoc_these_aux_string_tl}~ est~ absent~ du~
+        \Folder{\c__denisbdoc_flatsample_string_tl}.~ Pour~ régler~ le~ problème,~
+        rendez-vous~ dans~ ce~ dossier~ et~ compilez~ le~ \File{these.tex}~ au~
+        moyen~ de~ la~ commande~ suivante\footnote{Sur~ une~ seule~ ligne.}~ :
+        \par\medskip
 
-        \lstinline[language=bash,upquote=true,commentstyle=,stringstyle=,showstringspaces=false]+latexmk~-f~-pdf~-jobname=these~-pdflatex="pdflatex~\%O~'\\RequirePackage\{etoolbox\}\\AtEndPreamble\{\\RequirePackage\{yathesis-demo\}\}\\input\{\%S\}'"~these+
+        \lstinline[language=bash,upquote=true,commentstyle=,stringstyle=,showstringspaces=false]+latexmk~-g~ -norc~ -r~ ./latexmkrc~-jobname=these-pdflatex="pdflatex~\%O~'\\RequirePackage\{etoolbox\}\\AtEndPreamble\{\\RequirePackage\{yathesis-demo\}\}\\input\{\%S\}'"~these+
       \end{dbwarning}
     }
   }
+  %
+  \msg_new:nnn{denisbdoc}{File~ `\c__denisbdoc_template_sample_zip_string_tl'~ needed}{%
+    File~ `canevas-specimen.zip'~ needed~ (otherwise~ this~ document~ will~ be~
+    incomplete)!~ Please~ get~ this~ file~ from~ the~ orignal~ yathesis'~
+    documentation~ and~ save~ it~ in~ `../exemples/'~ folder.~ Afterwards,~
+    recompile~ this~ document.%
+  }%
+  \file_if_exist:nTF {\c__denisbdoc_examples_path_tl/\c__denisbdoc_template_sample_zip_string_tl} {}{
+    \msg_warning:nn{denisbdoc}{File~ `\c__denisbdoc_template_sample_zip_string_tl'~ needed}
+    \AfterEndPreamble{%
+      \begin{dbwarning}{Documentation~incomplète~!}{}
+        La~ version~ électronique~ (\pdf{})~ de~ la~ présente~ documentation~
+        est~ incomplète~ :~ normalement,~ les~ canevas~ et~ spécimens~ y~ sont~
+        intégrés~ par~ le~ biais~ de~ l'archive~ \gls{zip}~
+        \file{\c__denisbdoc_template_sample_zip_string_tl}~ (alors~ accessible~ par~
+        simple~ clic)~ mais~ ce~ n'est~ pas~ le~ cas~ ici,~ ce~ fichier~ étant~
+        absent~ du~ \Folder{\c__denisbdoc_examples_path_tl}.~ Pour~ régler~ le~
+        problème,~ accédez~ à~ ce~ fichier~ attaché~ à~ la~ version~
+        électronique~ originale~ de~ la~ documentation~ de~
+        \yatcl{}\footnote{Disponible~ à~ l'adresse~
+          \url{http://ctan.org/pkg/yathesis},~ si~ besoin~ est.}~ et~ placez-le~
+        dans~ le~ \Folder{\c__denisbdoc_examples_path_tl}.
+      \end{dbwarning}
+    }
+  }
+  %
   \cs_new_protected:Nn \__denisbdoc_screenshot:nn
   {
     \bool_if:NTF {\g__denisbdoc_these_aux_exists} {
       \fbox{\includegraphics[bylabel=#2,width=#1\linewidth-2\fboxsep-2\fboxrule]{\c__denisbdoc_flatsample_string_tl/these}}%
     }{%
       \begin{dbwarning}{Copie~d'écran~manquante~!}{}
-        Il ~devrait ~ici ~y ~avoir ~une ~copie\space
-        ~d'écran. ~Cf. ~\vref{wa-documentation-incomplete} ~pour ~plus ~de\space
-        ~détails.
+        Il~ devrait~ ici~ y~ avoir~ une~ copie\space ~ d'écran.~ Cf.~
+        \vref{wa-documentation-incomplete}~ pour~ plus~ de~ détails.
       \end{dbwarning}
     }
   }
