@@ -120,6 +120,7 @@ This work consists of the file  denisbdoc.dtx
 %\changes{v0.3}{2016/06/10}{Third CTAN version}
 %\changes{v0.4}{2016/10/24}{Fourth CTAN version}
 %\changes{v0.5}{2016/10/30}{Fifth CTAN version}
+%\changes{v0.6}{2016/12/08}{Sixth CTAN version}
 %
 %\begin{abstract}
 % ...
@@ -261,6 +262,7 @@ This work consists of the file  denisbdoc.dtx
 \RequirePackage{siunitx}%
 % \RequirePackage[a4paper]{geometry}%
 \RequirePackage{booktabs}%
+\RequirePackage{multirow}%
 \RequirePackage[xr]{zref}%
 \RequirePackage[multiple]{footmisc}%
 % \RequirePackage[multiple,bottom]{footmisc}%
@@ -560,24 +562,15 @@ This work consists of the file  denisbdoc.dtx
 % update| margin notes provided by \pkg{tcolorbox} are always on the left hand
 % size and typesetted correctly.
 %    \begin{macrocode}
-% \newtcolorbox{tcbdocmarginnote@tmp}[2]{%
-%   enhanced jigsaw,size=fbox,boxrule=1pt,leftrule=0pt,rightrule=0pt,
-%   arc=0pt,outer arc=1pt,boxsep=1pt,top=1pt,bottom=1pt,
-%   nobeforeafter,width=\marginparwidth,
-%   colframe=red!50!white,colback=red!25!yellow!5!white,fontupper=\scriptsize,before upper=#2,
-%   doc@marginnote,#1%
-% }
 % \renewcommand{\tcbdocmarginnote}[2][]{%
-%   \marginnote[
-%   \begin{tcbdocmarginnote@tmp}{#1}{\flushright}
-%     #2
-%   \end{tcbdocmarginnote@tmp}
-%   ]{%
-%     \begin{tcbdocmarginnote@tmp}{#1}{\flushleft}
-%       #2
-%     \end{tcbdocmarginnote@tmp}
-%   }
-% }
+%   \marginnote{%
+%   \begin{tcolorbox}[enhanced jigsaw,size=fbox,boxrule=1pt,leftrule=0pt,rightrule=0pt,
+%     arc=0pt,outer arc=1pt,boxsep=1pt,top=1pt,bottom=1pt,
+%     nobeforeafter,width=\marginparwidth,
+%     colframe=red!50!white,colback=red!25!yellow!5!white,fontupper=\scriptsize,
+%     if odd page or oneside={flushright upper}{flushright upper},
+%     doc@marginnote,#1]#2\end{tcolorbox}}}
+\tcbset{doc marginnote={if odd page or oneside={flushright upper}{flushright upper}}}
 \patchcmd{\@mn@margintest}{\@tempswafalse}{\@tempswatrue}{}{}
 \patchcmd{\@mn@margintest}{\@tempswafalse}{\@tempswatrue}{}{}
 \reversemarginpar
@@ -702,10 +695,6 @@ This work consists of the file  denisbdoc.dtx
 %    \end{macrocode}
 %
 %    \begin{macrocode}
-\ExplSyntaxOn
-%    \end{macrocode}
-%
-%    \begin{macrocode}
 \DeclareUrlCommand\urldirectory{\urlstyle{tt}}
 %    \end{macrocode}
 %
@@ -734,6 +723,7 @@ This work consists of the file  denisbdoc.dtx
 \tl_const:Nn \c_@@_treesample_string_tl {\c_@@_sample_string_tl/en-arborescence}
 \tl_const:Nn \c_@@_template_sample_zip_string_tl {canevas-specimen.zip}
 \tl_const:Nn \c_@@_these_aux_string_tl {these.aux}
+\tl_const:Nn \c_@@_these_snippets_directory_tl {extraits-these}
 %    \end{macrocode}
 % \end{macro}
 % \end{macro}
@@ -828,7 +818,7 @@ This work consists of the file  denisbdoc.dtx
     @pnumwidth,bookmarksetup,DeclareTextCommand,text,iiint,NewPairedDelimiter,%
     norm,lnorm,llnorm,lpnorm,supnorm,abs,prt,brk,brc,lrangle,leqgeq,%
     norm*,lnorm*,llnorm*,lpnorm*,supnorm*,abs*,prt*,brk*,brc*,lrangle*,leqgeq*,%
-    pdfobjcompresslevel%
+    pdfobjcompresslevel,chaptermark%
   },%
   morekeywords=[1]{% Environments' names
     tabular,tabulary,math,document,minipage,eqnarray,eqnarray*,align,align*,%
@@ -1296,6 +1286,17 @@ This work consists of the file  denisbdoc.dtx
 }%
 %
 \tcbset{%
+  doc~head={%
+    % boxsep=4pt,arc=4pt,boxrule=0.6pt,%
+    % frame~style=fill,%
+    % colframe=red!50!black,%
+    interior~style={%
+      fill,%
+      color=yellow!10!white,%
+    }%
+  }%
+}
+\tcbset{%
   /tcb/doclang/environment~content=contenu~de~l'environnement,
   /tcb/doclang/color=~(couleur),
   /tcb/doclang/colors=Couleurs,
@@ -1637,6 +1638,31 @@ Nouv.~:}~#1}
   \IfLanguageName{english}{~directory}{}%
 }%
 %
+\NewDocumentCommand \ie { s } {%
+  \IfBooleanTF {#1}
+  {
+    \IfLanguageName{french}{%
+      c'est-\`{a}-dire
+    }{}%
+    \IfLanguageName{english}{%
+      id est
+    }{}%
+  }
+  {
+    \IfLanguageName{french}{%
+      c.-à-d
+    }{}%
+    \IfLanguageName{english}{%
+      i.e
+    }{}%
+    \@ifnextchar.%
+    {
+    }{
+      .\xspace
+    }%
+  }
+}
+%
 \NewDocumentCommand{\program}{ m }
 {
   \_@@_file:n {#1}%
@@ -1896,7 +1922,7 @@ Nouv.~:}~#1}
     documentation~ and~ save~ it~ in~ `../exemples/'~ folder.~ Afterwards,~
     recompile~ this~ document.%
   }%
-  \file_if_exist:nTF {\c_@@_examples_path_tl/\c_@@_template_sample_zip_string_tl} {}{
+  \file_if_exist:nTF {../\c_@@_template_sample_zip_string_tl} {}{
     \msg_warning:nn{denisbdoc}{File~ `\c_@@_template_sample_zip_string_tl'~ needed}
     \AfterEndPreamble{%
       \begin{dbwarning}{Documentation~incomplète~!}{}
@@ -1905,9 +1931,9 @@ Nouv.~:}~#1}
         intégrés~ par~ le~ biais~ de~ l'archive~ \gls{zip}~
         \file{\c_@@_template_sample_zip_string_tl}~ (alors~ accessible~ par~
         simple~ clic)~ mais~ ce~ n'est~ pas~ le~ cas~ ici,~ ce~ fichier~ étant~
-        absent~ du~ \Folder{\c_@@_examples_path_tl}.~ Pour~ régler~ le~
-        problème,~ accédez~ à~ ce~ fichier~ attaché~ à~ la~ version~
-        électronique~ originale~ de~ la~ documentation~ de~
+        absent~ du~ dossier~ parent.~ % \Folder{\c_@@_examples_path_tl}.~
+        Pour~ régler~ le~ problème,~ accédez~ à~ ce~ fichier~ attaché~ à~ la~
+        version~ électronique~ originale~ de~ la~ documentation~ de~
         \yatcl{}\footnote{Disponible~ à~ l'adresse~
           \url{http://ctan.org/pkg/yathesis},~ si~ besoin~ est.}~ et~ placez-le~
         dans~ le~ \Folder{\c_@@_examples_path_tl}.
@@ -1967,17 +1993,30 @@ Nouv.~:}~#1}
   codes,%
   #1%
 }
-\NewTCBInputListing{\preamblesample}{ O{these.tex} m m }{%
+\NewTCBInputListing{\preamblesampleold}{ O{these.tex} m m }{%
   samples,
   drop~lifted~shadow,
   listing~file={\c_@@_treesample_string_tl/#1},
   listing~options={rangebeginprefix=\\,rangeendsuffix=\},#2},
   #3,
 }%
-\NewTCBInputListing{\bodysample}{ O{these.tex} m m }{%
+\NewTCBInputListing{\preamblesample}{ m m m }{%
+  samples,
+  drop~lifted~shadow,
+  listing~file={\c_@@_these_snippets_directory_tl/#1},
+  listing~options={#2},
+  #3,
+}%
+\NewTCBInputListing{\bodysampleold}{ O{these.tex} m m }{%
   samples,
   listing~file={\c_@@_treesample_string_tl/#1},
   listing~options={rangebeginprefix=\\,rangeendsuffix=\},#2},
+  #3,
+}%
+\NewTCBInputListing{\bodysample}{ m m m }{%
+  samples,
+  listing~file={\c_@@_these_snippets_directory_tl/#1},
+  listing~options={#2},
   #3,
 }%
 % \newtcbinputlisting{\preamblesample}[3][these.tex]{%

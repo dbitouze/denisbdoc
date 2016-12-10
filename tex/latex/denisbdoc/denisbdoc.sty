@@ -55,6 +55,7 @@
 \RequirePackage{calc}%
 \RequirePackage{siunitx}%
 \RequirePackage{booktabs}%
+\RequirePackage{multirow}%
 \RequirePackage[xr]{zref}%
 \RequirePackage[multiple]{footmisc}%
 \RequirePackage{rotating}%
@@ -202,6 +203,7 @@
     },
   }
 }
+\tcbset{doc marginnote={if odd page or oneside={flushright upper}{flushright upper}}}
 \patchcmd{\@mn@margintest}{\@tempswafalse}{\@tempswatrue}{}{}
 \patchcmd{\@mn@margintest}{\@tempswafalse}{\@tempswatrue}{}{}
 \reversemarginpar
@@ -271,7 +273,6 @@
     \hyperlink{#2:#1}{\textbf{#1}}%
   }%
 }
-\ExplSyntaxOn
 \DeclareUrlCommand\urldirectory{\urlstyle{tt}}
 \ExplSyntaxOn
 \tl_const:Nn \c__denisbdoc_examples_path_tl {../exemples}
@@ -283,6 +284,7 @@
 \tl_const:Nn \c__denisbdoc_treesample_string_tl {\c__denisbdoc_sample_string_tl/en-arborescence}
 \tl_const:Nn \c__denisbdoc_template_sample_zip_string_tl {canevas-specimen.zip}
 \tl_const:Nn \c__denisbdoc_these_aux_string_tl {these.aux}
+\tl_const:Nn \c__denisbdoc_these_snippets_directory_tl {extraits-these}
 \tl_const:Nn \c__denisbdoc_unixtldirectory_string_tl {/usr/local/}
 \tl_const:Nn \c__denisbdoc_tlversion_string_tl {2016}
 \tl_const:Nn \c__denisbdoc_wintldirectory_string_tl {c:/}
@@ -325,7 +327,7 @@
     @pnumwidth,bookmarksetup,DeclareTextCommand,text,iiint,NewPairedDelimiter,%
     norm,lnorm,llnorm,lpnorm,supnorm,abs,prt,brk,brc,lrangle,leqgeq,%
     norm*,lnorm*,llnorm*,lpnorm*,supnorm*,abs*,prt*,brk*,brc*,lrangle*,leqgeq*,%
-    pdfobjcompresslevel%
+    pdfobjcompresslevel,chaptermark%
   },%
   morekeywords=[1]{% Environments' names
     tabular,tabulary,math,document,minipage,eqnarray,eqnarray*,align,align*,%
@@ -716,6 +718,17 @@
   }%
 }%
 \tcbset{%
+  doc~head={%
+    % boxsep=4pt,arc=4pt,boxrule=0.6pt,%
+    % frame~style=fill,%
+    % colframe=red!50!black,%
+    interior~style={%
+      fill,%
+      color=yellow!10!white,%
+    }%
+  }%
+}
+\tcbset{%
   /tcb/doclang/environment~content=contenu~de~l'environnement,
   /tcb/doclang/color=~(couleur),
   /tcb/doclang/colors=Couleurs,
@@ -953,6 +966,30 @@ Nouv.~:}~#1}
   \__denisbdoc_file:n {#1}%
   \IfLanguageName{english}{~directory}{}%
 }%
+\NewDocumentCommand \ie { s } {%
+  \IfBooleanTF {#1}
+  {
+    \IfLanguageName{french}{%
+      c'est-\`{a}-dire
+    }{}%
+    \IfLanguageName{english}{%
+      id est
+    }{}%
+  }
+  {
+    \IfLanguageName{french}{%
+      c.-à-d
+    }{}%
+    \IfLanguageName{english}{%
+      i.e
+    }{}%
+    \@ifnextchar.%
+    {
+    }{
+      .\xspace
+    }%
+  }
+}
 \NewDocumentCommand{\program}{ m }
 {
   \__denisbdoc_file:n {#1}%
@@ -1175,7 +1212,7 @@ Nouv.~:}~#1}
     documentation~ and~ save~ it~ in~ `../exemples/'~ folder.~ Afterwards,~
     recompile~ this~ document.%
   }%
-  \file_if_exist:nTF {\c__denisbdoc_examples_path_tl/\c__denisbdoc_template_sample_zip_string_tl} {}{
+  \file_if_exist:nTF {../\c__denisbdoc_template_sample_zip_string_tl} {}{
     \msg_warning:nn{denisbdoc}{File~ `\c__denisbdoc_template_sample_zip_string_tl'~ needed}
     \AfterEndPreamble{%
       \begin{dbwarning}{Documentation~incomplète~!}{}
@@ -1184,9 +1221,9 @@ Nouv.~:}~#1}
         intégrés~ par~ le~ biais~ de~ l'archive~ \gls{zip}~
         \file{\c__denisbdoc_template_sample_zip_string_tl}~ (alors~ accessible~ par~
         simple~ clic)~ mais~ ce~ n'est~ pas~ le~ cas~ ici,~ ce~ fichier~ étant~
-        absent~ du~ \Folder{\c__denisbdoc_examples_path_tl}.~ Pour~ régler~ le~
-        problème,~ accédez~ à~ ce~ fichier~ attaché~ à~ la~ version~
-        électronique~ originale~ de~ la~ documentation~ de~
+        absent~ du~ dossier~ parent.~ % \Folder{\c__denisbdoc_examples_path_tl}.~
+        Pour~ régler~ le~ problème,~ accédez~ à~ ce~ fichier~ attaché~ à~ la~
+        version~ électronique~ originale~ de~ la~ documentation~ de~
         \yatcl{}\footnote{Disponible~ à~ l'adresse~
           \url{http://ctan.org/pkg/yathesis},~ si~ besoin~ est.}~ et~ placez-le~
         dans~ le~ \Folder{\c__denisbdoc_examples_path_tl}.
@@ -1232,17 +1269,30 @@ Nouv.~:}~#1}
   codes,%
   #1%
 }
-\NewTCBInputListing{\preamblesample}{ O{these.tex} m m }{%
+\NewTCBInputListing{\preamblesampleold}{ O{these.tex} m m }{%
   samples,
   drop~lifted~shadow,
   listing~file={\c__denisbdoc_treesample_string_tl/#1},
   listing~options={rangebeginprefix=\\,rangeendsuffix=\},#2},
   #3,
 }%
-\NewTCBInputListing{\bodysample}{ O{these.tex} m m }{%
+\NewTCBInputListing{\preamblesample}{ m m m }{%
+  samples,
+  drop~lifted~shadow,
+  listing~file={\c__denisbdoc_these_snippets_directory_tl/#1},
+  listing~options={#2},
+  #3,
+}%
+\NewTCBInputListing{\bodysampleold}{ O{these.tex} m m }{%
   samples,
   listing~file={\c__denisbdoc_treesample_string_tl/#1},
   listing~options={rangebeginprefix=\\,rangeendsuffix=\},#2},
+  #3,
+}%
+\NewTCBInputListing{\bodysample}{ m m m }{%
+  samples,
+  listing~file={\c__denisbdoc_these_snippets_directory_tl/#1},
+  listing~options={#2},
   #3,
 }%
 \tl_new:N \g__denisbdoc_number_within_tl
