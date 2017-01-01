@@ -40,7 +40,7 @@ See http://www.latex-project.org/lppl.txt
 
 \endpreamble
 \postamble
-Copyright (C) 2015, 2016 by
+Copyright (C) 2015, 2016, 2017 by
   Denis Bitouz'e <denis.bitouze@lmpa.univ-littoral.fr>
 
 It may be distributed and/or modified under the conditions of
@@ -1234,8 +1234,8 @@ This work consists of the file  denisbdoc.dtx
 %   moredelim=*[s][\color{math}\ttfamily]{$}{$},
 %   stringstyle=\color{string},
 %   columns=flexible,
-%   % prebreak={\space\Righttorque},
-%   % postbreak={\space\Lefttorque}
+%   % prebreak={\c_space_tl\Righttorque},
+%   % postbreak={\c_space_tl\Lefttorque}
 % }%
 \lstdefinestyle{dbtex}{%
   escapechar=",
@@ -1422,7 +1422,7 @@ Nouv.~:}~#1}
   {}{}
 \xpatchcmd{\imki@putindex}
   {\imki@options}
-  {\space~ -o~ #1.\imki@extin\imki@options}
+  {\c_space_tl~ -o~ #1.\imki@extin\imki@options}
   {}{}
 \xpatchcmd{\imki@putindex}
   {.idx}
@@ -1479,7 +1479,7 @@ Nouv.~:}~#1}
 %     \protected@edef\@tempa{%
 %       \noexpand\glossary{\ttfamily#1\normalfont{}~(#2)\levelchar
 %         \ifx\saved@macroname\@empty
-%         \space\actualchar\generalname
+%         \c_space_tl\actualchar\generalname
 %         \else
 %         \expandafter\@gobble\saved@macroname
 %         \actualchar
@@ -1677,7 +1677,7 @@ Nouv.~:}~#1}
 }
 \NewDocumentCommand{\texlive}{ }
 {
-  \href{http://www.tug.org/texlive/}{\TeX{}\space{}Live}\xspace
+  \href{http://www.tug.org/texlive/}{\TeX{}\c_space_tl{}Live}\xspace
 }
 \NewDocumentCommand{\miktex}{ }
 {
@@ -1947,7 +1947,7 @@ Nouv.~:}~#1}
       \fbox{\includegraphics[bylabel=#2,width=#1\linewidth-2\fboxsep-2\fboxrule]{\c_@@_flatsample_string_tl/these}}%
     }{%
       \begin{dbwarning}{Copie~d'écran~manquante~!}{}
-        Il~ devrait~ ici~ y~ avoir~ une~ copie\space ~ d'écran.~ Cf.~
+        Il~ devrait~ ici~ y~ avoir~ une~ copie\c_space_tl ~ d'écran.~ Cf.~
         \vref{wa-documentation-incomplete}~ pour~ plus~ de~ détails.
       \end{dbwarning}
     }
