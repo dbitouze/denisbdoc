@@ -6,7 +6,7 @@
 %%
 %% denisbdoc.dtx  (with options: `package')
 %% -----------------------------------------------------------------------------
-%% denisbdoc --- A personal dirty package for documenting packages, version 0.6
+%% denisbdoc --- A personal dirty package for documenting packages, version 0.7
 %% 
 %% Maintained by Denis Bitouz'e
 %% E-mail: denis.bitouze@lmpa.univ-littoral.fr
@@ -15,7 +15,7 @@
 %% -----------------------------------------------------------------------------
 %% 
 \RequirePackage{expl3,l3keys2e,xparse}
-\ProvidesExplPackage {denisbdoc} {2016/12/08} {0.6}
+\ProvidesExplPackage {denisbdoc} {2017/01/01} {0.7}
   {A personal package for documenting packages}
 \@ifpackagelater { expl3 } { 2012/11/21 }
   { }
@@ -36,7 +36,7 @@
 }
 \ProcessKeysOptions { denisbdoc }
 \PassOptionsToPackage{obeyspaces}{url}
-\pdftex_if_engine:TF
+\sys_if_engine_pdftex:TF
   {
     \RequirePackage[T1]{fontenc}
     \RequirePackage[utf8]{inputenc}
@@ -815,7 +815,7 @@ Nouv.~:}~#1}
   {}{}
 \xpatchcmd{\imki@putindex}
   {\imki@options}
-  {\space~ -o~ #1.\imki@extin\imki@options}
+  {\c_space_tl~ -o~ #1.\imki@extin\imki@options}
   {}{}
 \xpatchcmd{\imki@putindex}
   {.idx}
@@ -1004,7 +1004,7 @@ Nouv.~:}~#1}
 }
 \NewDocumentCommand{\texlive}{ }
 {
-  \href{http://www.tug.org/texlive/}{\TeX{}\space{}Live}\xspace
+  \href{http://www.tug.org/texlive/}{\TeX{}\c_space_tl{}Live}\xspace
 }
 \NewDocumentCommand{\miktex}{ }
 {
@@ -1237,7 +1237,7 @@ Nouv.~:}~#1}
       \fbox{\includegraphics[bylabel=#2,width=#1\linewidth-2\fboxsep-2\fboxrule]{\c__denisbdoc_flatsample_string_tl/these}}%
     }{%
       \begin{dbwarning}{Copie~d'écran~manquante~!}{}
-        Il~ devrait~ ici~ y~ avoir~ une~ copie\space ~ d'écran.~ Cf.~
+        Il~ devrait~ ici~ y~ avoir~ une~ copie\c_space_tl ~ d'écran.~ Cf.~
         \vref{wa-documentation-incomplete}~ pour~ plus~ de~ détails.
       \end{dbwarning}
     }
@@ -1474,7 +1474,7 @@ Nouv.~:}~#1}
   \def\program#1{#1}
 }
 \ExplSyntaxOff
-%% Copyright (C) 2015, 2016 by
+%% Copyright (C) 2015, 2016, 2017 by
 %%   Denis Bitouz'e <denis.bitouze@lmpa.univ-littoral.fr>
 %% 
 %% It may be distributed and/or modified under the conditions of
