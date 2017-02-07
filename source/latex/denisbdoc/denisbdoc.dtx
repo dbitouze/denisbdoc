@@ -418,7 +418,7 @@ This work consists of the file  denisbdoc.dtx
 %
 % % Some hacks to avoid issues of \pkg{hypdoc} reported by me at
 % % \url{https://github.com/ho-tex/oberdiek/issues} (currently not used because
-% % this package has to much issues)). 
+% % this package has to much issues).
 % %    \begin{macrocode}
 % \@ifpackageloaded{hypdoc}{%
 %   % \let\theglossary\HDorg@theglossary
@@ -579,8 +579,7 @@ This work consists of the file  denisbdoc.dtx
 %    \end{macrocode}
 %
 %    \begin{macrocode}
-\DeclareTotalTCBox{\commandshell}{  v  }
-{ commandshell}{#1}
+\DeclareTotalTCBox{\commandshell}{  v  }{ commandshell}{#1}
 \newtcblisting{listingshell}[1][]{%
   % colback=black,
   % colupper=white,
@@ -781,6 +780,8 @@ This work consists of the file  denisbdoc.dtx
 \colorlet{en-arborescence}{red!20}
 \colorlet{a-plat}{blue!20}
 \colorlet{texcs}{blue}
+\colorlet{directive}{texcs}
+\colorlet{mandatory-argument}{red}
 \colorlet{environment}{teal}
 \colorlet{key}{purple}
 \colorlet{value}{violet}
@@ -1303,13 +1304,13 @@ This work consists of the file  denisbdoc.dtx
   escapechar=",
   language=[LaTeX]TeX,
   alsolanguage=[extLaTeX]TeX,
-  alsolanguage=[glossaries]TeX,
-  alsolanguage=[biblatex]TeX,
-  alsolanguage=[csquotes]TeX,
-  alsolanguage=[tcolorbox]TeX,
-  alsolanguage=[listings]TeX,
-  alsolanguage=[xcolor]TeX,
-  alsolanguage=[hyperref]TeX,
+  % alsolanguage=[glossaries]TeX,
+  % alsolanguage=[biblatex]TeX,
+  % alsolanguage=[csquotes]TeX,
+  % alsolanguage=[tcolorbox]TeX,
+  % alsolanguage=[listings]TeX,
+  % alsolanguage=[xcolor]TeX,
+  % alsolanguage=[hyperref]TeX,
   alsolanguage=[yad]TeX,
   alsolanguage=[gzt]TeX,
   alsolanguage=[nwejm]TeX,
@@ -1317,7 +1318,8 @@ This work consists of the file  denisbdoc.dtx
   breaklines=true,
   basicstyle=\normalfont\ttfamily,
   commentstyle=\color{comment}\itshape,
-  keywordstyle={\color{environment}},
+  directivestyle={\color{directive}},
+  keywordstyle={\color{red}},
   keywordstyle={[1]\color{environment}},
   keywordstyle={[2]\color{key}},
   keywordstyle={[3]\color{value}},
@@ -1700,30 +1702,30 @@ Nouv.~:}~#1}
   \IfLanguageName{english}{~directory}{}%
 }%
 %
-\NewDocumentCommand \ie { s } {%
-  \IfBooleanTF {#1}
-  {
-    \IfLanguageName{french}{%
-      c'est-\`{a}-dire
-    }{}%
-    \IfLanguageName{english}{%
-      id est
-    }{}%
-  }
-  {
-    \IfLanguageName{french}{%
-      c.-à-d
-    }{}%
-    \IfLanguageName{english}{%
-      i.e
-    }{}%
-    \@ifnextchar.%
-    {
-    }{
-      .\xspace
-    }%
-  }
-}
+% \NewDocumentCommand \ie { s } {%
+%   \IfBooleanTF {#1}
+%   {
+%     \IfLanguageName{french}{%
+%       c'est-\`{a}-dire
+%     }{}%
+%     \IfLanguageName{english}{%
+%       id est
+%     }{}%
+%   }
+%   {
+%     \IfLanguageName{french}{%
+%       c.-à-d
+%     }{}%
+%     \IfLanguageName{english}{%
+%       i.e
+%     }{}%
+%     \@ifnextchar.%
+%     {
+%     }{
+%       .\xspace
+%     }%
+%   }
+% }
 %
 \NewDocumentCommand{\program}{ m }
 {
@@ -1833,7 +1835,7 @@ Nouv.~:}~#1}
 {
   \hyperref[sec-comm-oblig]{%
     \textcolor{red!75!black}{
-      % \pdftex_if_engine:TF
+      % \sys_if_engine_pdftex:TF
       % {
       %   % \string!
       %   \ding{52}
