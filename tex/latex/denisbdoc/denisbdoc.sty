@@ -6,7 +6,7 @@
 %%
 %% denisbdoc.dtx  (with options: `package')
 %% -----------------------------------------------------------------------------
-%% denisbdoc --- A personal dirty package for documenting packages, version 0.7
+%% denisbdoc --- A personal dirty package for documenting packages, version 0.8
 %% 
 %% Maintained by Denis Bitouz'e
 %% E-mail: denis.bitouze@lmpa.univ-littoral.fr
@@ -15,7 +15,7 @@
 %% -----------------------------------------------------------------------------
 %% 
 \RequirePackage{expl3,l3keys2e,xparse}
-\ProvidesExplPackage {denisbdoc} {2017/01/01} {0.7}
+\ProvidesExplPackage {denisbdoc} {2017/01/01} {0.8}
   {A personal package for documenting packages}
 \@ifpackagelater { expl3 } { 2012/11/21 }
   { }
@@ -175,7 +175,7 @@
 \tcbuselibrary{listingsutf8}
 \else
 \tcbuselibrary{listings}
-\pdftex_if_engine:TF
+\sys_if_engine_pdftex:TF
   {
     \lstMakeShortInline[style=dbtex]|
   }{
@@ -207,8 +207,7 @@
 \patchcmd{\@mn@margintest}{\@tempswafalse}{\@tempswatrue}{}{}
 \patchcmd{\@mn@margintest}{\@tempswafalse}{\@tempswatrue}{}{}
 \reversemarginpar
-\DeclareTotalTCBox{\commandshell}{  v  }
-{ commandshell}{#1}
+\DeclareTotalTCBox{\commandshell}{  v  }{ commandshell}{#1}
 \newtcblisting{listingshell}[1][]{%
   % colback=black,
   % colupper=white,
@@ -302,6 +301,8 @@
 \colorlet{en-arborescence}{red!20}
 \colorlet{a-plat}{blue!20}
 \colorlet{texcs}{blue}
+\colorlet{directive}{texcs}
+\colorlet{mandatory-argument}{red}
 \colorlet{environment}{teal}
 \colorlet{key}{purple}
 \colorlet{value}{violet}
@@ -329,7 +330,7 @@
     norm*,lnorm*,llnorm*,lpnorm*,supnorm*,abs*,prt*,brk*,brc*,lrangle*,leqgeq*,%
     pdfobjcompresslevel,chaptermark%
   },%
-  morekeywords=[1]{% Environments' names
+  morekeywords={[1]% Environments' names
     tabular,tabulary,math,document,minipage,eqnarray,eqnarray*,align,align*,%
     equation,gather,multline,flalign,equation*,gather*,multline*,flalign*,%
     itemize,itemize*,enumerate,enumerate*,description,description*,%
@@ -355,7 +356,7 @@
     acrfullpl,Acrfullpl,%
     Acrlong*,acronymtype,printacronyms,printsymbols%
   },%
-  % Environments' names
+  % Mandatory arguments (other than environments' names)
   morekeywords={%
   },%
   % Mots-clés de niveau 2 : arguments obligatoires et environnements
@@ -376,11 +377,58 @@
 {%
   % Séquences de contrôles (communément appelées commandes ou macros)
   moretexcs={%
-    printbibliography,SetCiteCommand,autocite,addbibresource,fullcite,%
-    textcite,cite,citeauthor%
+    cite,Cite,parencite,Parencite,footcite,footcitetext,%
+    smartcite,Smartcite,%
+    textcite,Textcite,supercite,cites,Cites,parencites,%
+    Parencites,footcitesfootcitetexts,textcites,Textcites,%
+    supercites,autocite,Autocite,autocite*,Autocite*,autocites,%
+    Autocites,citeauthor,Citeauthor,citetitle,citetitle*,%
+    citeyear,citeurl,parentext,brackettext,nocite,fullcite,%
+    footfullcite,volcite,Volcite,pvolcite,Pvolcite,fvolcite,%
+    ftvolcite,tvolcite,Tvolcite,avolcite,Avolcite,notecite,%
+    Notecite,pnotecite,Pnotecite,fnotecite,citename,citelist,%
+    citefield,printbibliography,bibliography,citedate,%
+    ExecuteBibliographyOptions,defbibnote,psq,psqq,addbibresource%
   },%
-  % Mots-clés de niveau 1 : arguments optionnels
-  morekeywords={%
+  % morekeywords={%
+  %   @article,@book,@inbook,@bookinbook,@suppbook,@booklet,@collection,%
+  %   @conference,@incollection,@suppcollection,@manual,@misc,@online,%
+  %   @patent,@periodical,@suppperiodical,@proceedings,@inproceedings,%
+  %   @reference,@inreference,@report,@thesis,@unpublished,@masterthesis,%
+  %   @phdthesis,%
+  %   @Article,@Book,@Inbook,@Bookinbook,@Suppbook,@Booklet,@Collection,%
+  %   @conference,@Incollection,@Suppcollection,@Manual,@Misc,@Online,%
+  %   @patent,@Periodical,@Suppperiodical,@Proceedings,@Inproceedings,%
+  %   @reference,@Inreference,@Report,@Thesis,@Unpublished,@Masterthesis,%
+  %   @Phdthesis,%
+  %   @ARTICLE,@BOOK,@INBOOK,@BOOKINBOOK,@SUPPBOOK,@BOOKLET,@COLLECTION,%
+  %   @CONFERENCE,@INCOLLECTION,@SUPPCOLLECTION,@MANUAL,@MISC,@ONLINE,%
+  %   @PATENT,@PERIODICAL,@SUPPPERIODICAL,@PROCEEDINGS,@INPROCEEDINGS,%
+  %   @REFERENCE,@INREFERENCE,@REPORT,@THESIS,@UNPUBLISHED,@MASTERTHESIS,%
+  %   @PHDTHESIS,%
+  %   @string,@String,@STRING,@comment%
+  % },%
+  % directives
+  directives={%
+    article,book,inbook,bookinbook,suppbook,booklet,collection,%
+    conference,incollection,suppcollection,manual,misc,online,%
+    patent,periodical,suppperiodical,proceedings,inproceedings,%
+    reference,inreference,report,thesis,unpublished,masterthesis,%
+    phdthesis,%
+    Article,Book,Inbook,Bookinbook,Suppbook,Booklet,Collection,%
+    conference,Incollection,Suppcollection,Manual,Misc,Online,%
+    patent,Periodical,Suppperiodical,Proceedings,Inproceedings,%
+    reference,Inreference,Report,Thesis,Unpublished,Masterthesis,%
+    Phdthesis,%
+    ARTICLE,BOOK,INBOOK,BOOKINBOOK,SUPPBOOK,BOOKLET,COLLECTION,%
+    CONFERENCE,INCOLLECTION,SUPPCOLLECTION,MANUAL,MISC,ONLINE,%
+    PATENT,PERIODICAL,SUPPPERIODICAL,PROCEEDINGS,INPROCEEDINGS,%
+    REFERENCE,INREFERENCE,REPORT,THESIS,UNPUBLISHED,MASTERTHESIS,%
+    PHDTHESIS,%
+    string,String,STRING,comment%
+  },%
+  % Mots-clés de niveau 1 : attributs et options de biblatex
+  morekeywords=[2]{%
     abstract,addendum,afterword,annotation,annotator,author,authortype,%
     bookauthor,bookpagination,booksubtitle,booktitle,booktitleaddon,%
     chapter,commentator,date,doi,edition,editor,editora,editorb,%
@@ -400,19 +448,30 @@
     archiveprefix,journal,key,pdf,primaryclass,school,address,%
     %
     backend,style,citestyle,bibstyle,sorting,maxnames,minnames,maxitems,minitems,%
-    backref,abbreviate,firstinits,prenote,postnote,useprefix%
+    backref,abbreviate,firstinits,prenote,postnote,useprefix,autopunct%
   },%
-  % Mots-clés de niveau 2 : arguments obligatoires et environnements
-  morekeywords=[2]{%
-    % title,
-    heading,refsegment%
-  },%
-  % Mots-clés de niveau 3 : arguments optionnels valeurs de clés dans clé=valeur
+  % Mots-clés de niveau 3 : valeurs des attributs identifiées
   morekeywords=[3]{%
-    bibintoc,skipbib,chapter%
+    submitted,inpress,danish dutch,american,USenglish,english,%
+    british,UKenglish,canadian,australian,newzealand,finnish,french,%
+    francais,canadien,german,ngerman,austrian,naustrian,greek,%
+    italian,norsk,nynorsk,brazil,portuges,spanish,swedish,%
+    %
+    biber,numeric,numeric-comp,numeric-verb,alphabetic,%
+    alphabetic-verb,authoryear,authoryear-comp,authoryear-ibid,%
+    authoryear-icomp,authortitle,authortitle-comp,authortitle-ibid,%
+    authortitle-icomp,authortitle-terse,authortitle-tcomp,%
+    authortitle-ticomp,verbose,verbose-ibid,verbose-note,%
+    verbose-inote,verbose-trad1,verbose-trad2,verbose-trad3,%
+    reading,draft,debug,%
+    inline,footnote,superscript,plain,%
+    nyt,ynt,none,false%
   },%
-  sensitive%
-}[keywords,tex,comments]%
+  alsoletter={-123},%
+  sensitive,%
+  delim=*[directive]@
+  %
+}[keywords,directives,tex,comments]%
 \lstdefinelanguage[csquotes]{TeX}[LaTeX]{TeX}%
 {%
   % Séquences de contrôles (communément appelées commandes ou macros)
@@ -582,7 +641,7 @@
     vec,surname,usetikzlibrary,arccos,arcsin,arctan,log,lg,le,leq,ge,geq,%
     gztverb,th,epigraph%
   },%
-  % Environments' names
+  % Mandatory arguments (other than environments' names)
   morekeywords={%
     gzt,gztarticle%
   },%
@@ -620,11 +679,12 @@
     printauthorsdetails,date,title,author,maketitle,item,printbibliography,%
     vec,surname,usetikzlibrary,arccos,arcsin,arctan,log,lg,le,leq,ge,geq,set,%
     nwejmverb,th,epigraph,keywords,msc,acknowledgments,E,I,grad,Div,curl,rot,supp,%
-    DeclareMathOperator,BinaryOperators,dif,articlesetup%
+    DeclareMathOperator,BinaryOperators,dif,articlesetup,%
+    bbN,bbZ,bbD,bbQ,bbR,bbC,bbK%
   },%
-  % Environments' names
+  % Mandatory arguments (other than environments' names)
   morekeywords={%
-    nwejm,nwejmart,assertions,hypotheses%
+    nwejm,nwejmart,%
   },%
   morekeywords=[1]{% Environments' names
     abstract,minitoclist,bookreview,bookadvertisement,%
@@ -632,14 +692,15 @@
     theorem,theoreme,corollary,corollaire,conjecture,proposition,%
     lemma,lemme,axiom,axiome,definition,remark,remarque,example,exemple,notation,%
     theorem*,theoreme*,corollary*,corollaire*,conjecture*,proposition*,proof,preuve,%
-    lemma*,lemme*,axiom*,axiome*,definition*,remark*,remarque*,example*,exemple*,notation*%
+    lemma*,lemme*,axiom*,axiome*,definition*,remark*,remarque*,example*,exemple*,notation*,%
+    assertions,hypotheses%
   },%
   morekeywords=[2]{% Keys of key-value lists
     number,month,year,publisher,address,phone,fax,email,url,issn,isbn,short,minishort,notintoc,%
     abstract,frenchtitle,englishtitle,% title,label,%
     pictogram,list,help,diameter,textwidth,xshift,yshift,%
     affiliation,affiliationtagged,email,minibio,photo,webpage,frontcover,bibkey,copyright,%
-    gradient%
+    gradient,title/french,style%
   },%
   morekeywords=[3]{% Values of key-value lists
     true,false,theorem,definition,proof%
@@ -647,7 +708,7 @@
   morekeywords=[4]{% Class and packages options
     pagegrid,forprinter,cover,forauthors,%
   },%
-  alsoletter={!-*1234560}%
+  alsoletter={!-*1234560/}%
 }%
 \lstdefinelanguage{bash}[]{sh}%
 {%
@@ -678,13 +739,13 @@
   escapechar=",
   language=[LaTeX]TeX,
   alsolanguage=[extLaTeX]TeX,
-  alsolanguage=[glossaries]TeX,
-  alsolanguage=[biblatex]TeX,
-  alsolanguage=[csquotes]TeX,
-  alsolanguage=[tcolorbox]TeX,
-  alsolanguage=[listings]TeX,
-  alsolanguage=[xcolor]TeX,
-  alsolanguage=[hyperref]TeX,
+  % alsolanguage=[glossaries]TeX,
+  % alsolanguage=[biblatex]TeX,
+  % alsolanguage=[csquotes]TeX,
+  % alsolanguage=[tcolorbox]TeX,
+  % alsolanguage=[listings]TeX,
+  % alsolanguage=[xcolor]TeX,
+  % alsolanguage=[hyperref]TeX,
   alsolanguage=[yad]TeX,
   alsolanguage=[gzt]TeX,
   alsolanguage=[nwejm]TeX,
@@ -692,7 +753,8 @@
   breaklines=true,
   basicstyle=\normalfont\ttfamily,
   commentstyle=\color{comment}\itshape,
-  keywordstyle={\color{environment}},
+  directivestyle={\color{directive}},
+  keywordstyle={\color{red}},
   keywordstyle={[1]\color{environment}},
   keywordstyle={[2]\color{key}},
   keywordstyle={[3]\color{value}},
@@ -966,30 +1028,6 @@ Nouv.~:}~#1}
   \__denisbdoc_file:n {#1}%
   \IfLanguageName{english}{~directory}{}%
 }%
-\NewDocumentCommand \ie { s } {%
-  \IfBooleanTF {#1}
-  {
-    \IfLanguageName{french}{%
-      c'est-\`{a}-dire
-    }{}%
-    \IfLanguageName{english}{%
-      id est
-    }{}%
-  }
-  {
-    \IfLanguageName{french}{%
-      c.-à-d
-    }{}%
-    \IfLanguageName{english}{%
-      i.e
-    }{}%
-    \@ifnextchar.%
-    {
-    }{
-      .\xspace
-    }%
-  }
-}
 \NewDocumentCommand{\program}{ m }
 {
   \__denisbdoc_file:n {#1}%
@@ -1096,7 +1134,7 @@ Nouv.~:}~#1}
 {
   \hyperref[sec-comm-oblig]{%
     \textcolor{red!75!black}{
-      % \pdftex_if_engine:TF
+      % \sys_if_engine_pdftex:TF
       % {
       %   % \string!
       %   \ding{52}
