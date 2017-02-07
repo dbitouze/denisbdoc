@@ -530,7 +530,7 @@ This work consists of the file  denisbdoc.dtx
 \tcbuselibrary{listingsutf8}
 \else
 \tcbuselibrary{listings}
-\pdftex_if_engine:TF
+\sys_if_engine_pdftex:TF
   {
     \lstMakeShortInline[style=dbtex]|
   }{
