@@ -1,8 +1,8 @@
 denisbdoc - A personal package for documenting classes and packages, v. 0.8
 ===========================================================================
 
-**The (quick 'n dirty) `denisbdoc` package is just for documenting the classes
-I've written.**
+**The sole purpose of this (quick 'n dirty) `denisbdoc` package is for
+documenting the classes written by its author (Denis Bitouzé).**
 
 The class is supplied in `.dtx` format. If you want to unpack the `.dtx`
 yourself, running:

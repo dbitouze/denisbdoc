@@ -6,16 +6,17 @@
 %%
 %% denisbdoc.dtx  (with options: `package')
 %% -----------------------------------------------------------------------------
-%% denisbdoc --- A personal dirty package for documenting packages, version 0.8
+%% denisbdoc --- A personal dirty package for documenting personal classes,
+%%               version 0.8
 %% 
-%% Maintained by Denis Bitouz'e
-%% E-mail: denis.bitouze@lmpa.univ-littoral.fr
+%% Maintained by Denis Bitouzé
+%% E-mail: denis.bitouze@univ-littoral.fr
 %% Released under the LaTeX Project Public License v1.3c or later
 %% See http://www.latex-project.org/lppl.txt
 %% -----------------------------------------------------------------------------
 %% 
 \RequirePackage{expl3,l3keys2e,xparse}
-\ProvidesExplPackage {denisbdoc} {2017/01/01} {0.8}
+\ProvidesExplPackage {denisbdoc} {2020/03/27} {0.8}
   {A personal package for documenting packages}
 \@ifpackagelater { expl3 } { 2012/11/21 }
   { }
@@ -33,42 +34,61 @@
   yad .bool_gset:N = \g__denisbdoc_yad_bool,
   gzt .bool_gset:N = \g__denisbdoc_gzt_bool,
   nwejm .bool_gset:N = \g__denisbdoc_nwejm_bool,
+  studentreport .bool_gset:N = \g__denisbdoc_studentreport_bool,
+  lscape .bool_gset:N = \g__denisbdoc_lscape_bool,
 }
 \ProcessKeysOptions { denisbdoc }
 \PassOptionsToPackage{obeyspaces}{url}
 \sys_if_engine_pdftex:TF
-  {
-    \RequirePackage[T1]{fontenc}
-    \RequirePackage[utf8]{inputenc}
-  }{
-    \RequirePackage{fontspec}
-  }
+{
+  \RequirePackage{cmap}
+  \RequirePackage[T1]{fontenc}
+  \RequirePackage[utf8]{inputenc}
+}{
+  \RequirePackage{fontspec}
+}
 \RequirePackage{xpatch}%
 \AtEndPreamble{%
   \RequirePackage{mweights}%
 }%
-\RequirePackage{parskip}%
 \RequirePackage{fixfoot}%
-\RequirePackage{marginnote}
-\RequirePackage[inline]{enumitem}%
+\newif\if@DBD@beamer@not@loaded@
+\@DBD@beamer@not@loaded@true
+\@ifclassloaded{beamer}{\@DBD@beamer@not@loaded@false}{\@DBD@beamer@not@loaded@true}
+\if@DBD@beamer@not@loaded@
+\RequirePackage{parskip}%
+  \RequirePackage{marginnote}
+  \RequirePackage{mparhack}
+  \RequirePackage[inline]{enumitem}
+\fi%
 \RequirePackage{afterpage}%
 \RequirePackage{calc}%
 \RequirePackage{siunitx}%
 \RequirePackage{booktabs}%
 \RequirePackage{multirow}%
 \RequirePackage[xr]{zref}%
-\RequirePackage[multiple]{footmisc}%
-\RequirePackage{rotating}%
-\RequirePackage{pdflscape}%
+\if@DBD@beamer@not@loaded@
+  \RequirePackage[multiple]{footmisc}%
+  \RequirePackage{rotating}%
+\fi%
+\bool_if:nTF {\g__denisbdoc_lscape_bool} {%
+  \RequirePackage{lscape}%
+}{%
+  \RequirePackage{pdflscape}%
+}
 \RequirePackage{xspace}%
 \RequirePackage{accsupp}
+\RequirePackage{newunicodechar}
 \RequirePackage{hologo}%
 \RequirePackage{xifthen}%
 \RequirePackage{refcount}%
+\RequirePackage{etoolbox}%
 \RequirePackage{iflang}%
 \RequirePackage{ifpdf}%
 \RequirePackage{amssymb}%
-\RequirePackage{tocvsec2}%
+\if@DBD@beamer@not@loaded@
+  \RequirePackage{tocvsec2}%
+\fi
 \RequirePackage{ltxcmds}%
 \RequirePackage{csquotes}%
 \RequirePackage{tikz}%
@@ -90,22 +110,28 @@
     % }%
     \let\__denisbdoc_printbibliography_ORI\printbibliography%
     \renewcommand{\printbibliography}[1][]{%
-      \pagestyle{biblio}%
-      \__denisbdoc_printbibliography_ORI[heading=bibintoc,#1]%
-      \pagestyle{ordinary}%
+      \@ifpackageloaded{setspace}{%
+        \singlespacing%
+      }{%
+      }
+      \chapter*{\bibname}%
+      \__denisbdoc_printbibliography_ORI[heading=none,#1]%
     }%
-  }{%
   }%
 }%
 }{%
-  \RequirePackage[backend=biber,style=authortitle,autopunct=false,useprefix=true,backref,dashed=false]{biblatex}%
+  \RequirePackage[%backend=biber%
+  ,style=authortitle,dashed=false
+  ,autopunct=false,useprefix=true,backref]{biblatex}%
 }%
 \RequirePackage{morewrites}%
 \RequirePackage{babel}%
-\RequirePackage[nodayofweek]{datetime}%
+\RequirePackage[useregional]{datetime2}%
 \RequirePackage{subcaption}%
-\RequirePackage{tocbibind}%
-\RequirePackage[xindy]{imakeidx}
+\if@DBD@beamer@not@loaded@
+  \RequirePackage{tocbibind}%
+  \RequirePackage[xindy]{imakeidx}
+\fi%
 \RequirePackage{varioref}%
 \@ifpackageloaded{tcolorbox}{%
 }{%
@@ -115,13 +141,16 @@
 }{%
   \RequirePackage[hyperfootnotes=false,hyperindex=false]{hyperref}%
 }%
-\RequirePackage{attachfile2} \@ifpackageloaded{nameref}{%
+\RequirePackage{attachfile2}%
+\@ifpackageloaded{nameref}{%
 }{%
   \RequirePackage{nameref}%
 }%
 \@ifpackageloaded{hypcap}{%
 }{%
-  \RequirePackage[all]{hypcap}%
+  \if@DBD@beamer@not@loaded@
+    \RequirePackage[all]{hypcap}%
+  \fi%
 }%
 \@ifpackageloaded{bookmark}{%
 }{%
@@ -132,6 +161,15 @@
   % \RequirePackage{glossaries}%
   \RequirePackage[xindy,hyperfirst=false,toc=false]{glossaries-extra}%
   \makeglossaries%
+  \newglossaryentry{zip}{%
+    name=zip,%
+    category={format},%
+    description={format~ de~ fichier~ permettant~ l'archivage~ (utilisation~
+      d'un~ seul~ fichier~ pour~ stocker~ plusieurs~ fichiers)~ et~ la~
+      compression~ de~ données~ (diminution~ de~ l'espace~ occupé~ sur~ le~
+      support~ numérique)~ sans~ perte~ de~ qualité},%
+    text={zip}%
+  }%
   \setglossarystyle{indexhypergroup}%
   \setabbreviationstyle[acronym]{long-short-sc}%
   \newcommand*{\formatfont}[1]{\textsc{#1}}%
@@ -147,22 +185,24 @@
 }{%
   \RequirePackage{cleveref}%
 }%
-\def\hdpindex#1#2{%
-  \csname\ifx\\#1\\relax\else#1\fi\endcsname{%
-    \hyperpage{#2}%
-  }%
-}
-\let\HDorg@wrglossary\@wrglossary
-\def\@wrglossary#1{%
-  \let\HDorg@encapchar\encapchar
-  \def\encapchar##1\encapchar##2\@nil{%
-    \HDorg@encapchar
-    hdpindex{##1}%
-  }%
-  \HDorg@wrglossary{#1\encapchar\encapchar\@nil}%
-}
+\if@DBD@beamer@not@loaded@
+  \def\hdpindex#1#2{%
+    \csname\ifx\\#1\\relax\else#1\fi\endcsname{%
+      \hyperpage{#2}%
+    }%
+  }
+  \let\HDorg@wrglossary\@wrglossary
+  \def\@wrglossary#1{%
+    \let\HDorg@encapchar\encapchar
+    \def\encapchar##1\encapchar##2\@nil{%
+      \HDorg@encapchar
+      hdpindex{##1}%
+    }%
+    \HDorg@wrglossary{#1\encapchar\encapchar\@nil}%
+  }
+\fi%
 \renewcommand{\acrpluralsuffix}{}
-\ltx@iffilelater{frenchb.ldf}{2016/03/20}{%
+\ltx@iffilelater{french.ldf}{2016/03/20}{%
 }{%
   \DeclareRobustCommand*{\NoAutoSpacing}{\FBAutoSpaceGuillfalse%
     \ifFB@active@punct\noautospace@beforeFDP\shorthandoff{;:!?}\fi%
@@ -175,12 +215,6 @@
 \tcbuselibrary{listingsutf8}
 \else
 \tcbuselibrary{listings}
-\sys_if_engine_pdftex:TF
-  {
-    \lstMakeShortInline[style=dbtex]|
-  }{
-    \lstMakeShortInline[style=dbtex]×
-  }
 \fi
 \tcbuselibrary{%
   documentation,theorems,breakable,skins,xparse%
@@ -204,10 +238,16 @@
   }
 }
 \tcbset{doc marginnote={if odd page or oneside={flushright upper}{flushright upper}}}
-\patchcmd{\@mn@margintest}{\@tempswafalse}{\@tempswatrue}{}{}
-\patchcmd{\@mn@margintest}{\@tempswafalse}{\@tempswatrue}{}{}
 \reversemarginpar
-\DeclareTotalTCBox{\commandshell}{  v  }{ commandshell}{#1}
+\pretocmd{\tcbdocmarginnote}{%
+  \patchcmd{\@mn@margintest}{\@tempswafalse}{\@tempswatrue}{}{}
+  \patchcmd{\@mn@margintest}{\@tempswafalse}{\@tempswatrue}{}{}
+  \reversemarginpar%
+}{}{}
+\@ifpackageloaded{geometry}{%
+  \geometry{marginparwidth=.65in}%
+}{}
+\DeclareTotalTCBox{\commandshell}{ v }{ commandshell}{#1}
 \newtcblisting{listingshell}[1][]{%
   % colback=black,
   % colupper=white,
@@ -235,6 +275,7 @@
 }
 \usetikzlibrary{trees,backgrounds,fit,calc,positioning}
 \attachfilesetup{color=Hyperlink}
+\if@DBD@beamer@not@loaded@
 \newcommand{\indexmark}[1]{\hypertarget{index:#1}{#1}\markboth{#1}{#1}}
 \newcommand{\targetindexentry}[1]{\indexmark{#1}}
 \newcounter{targeti}
@@ -248,14 +289,15 @@
   \index{exemple!#1|example}%
 }
 \newcommand{\indexsee}[2]{\index{#1|see{#2}}}
-\xpretocmd{\printindex}{\def\DBD@index@symbolic@name{#1}}{}{}
+  \xpretocmd{\printindex}{\edef\DBD@index@symbolic@name{#1}}{}{\aaa}
+  % \xpretocmd{\printindex}{\edef\DBD@index@symbolic@name{#1}}{}{\aaa}
 \xpatchcmd{\indexprologue}{#2}{%
   #2
   \par\bigskip
   \csuse{DBD@indexnavigation@\csuse{DBD@index@symbolic@name}}%
-}{}{}%
-\newif\if@DBD@no@first@letter@
-\@DBD@no@first@letter@false
+}{}{\aaa}%
+  \newif\if@DBD@no@first@letter@
+  \@DBD@no@first@letter@false
 \newcommand*{\indexheading}[2]{%
   \hypertarget{#2:#1}{\textbf{#1}}%
   \protected@write\@auxout{}{\string\DBD@indexgroup{#1}{#2}}%
@@ -271,7 +313,7 @@
     \fi
     \hyperlink{#2:#1}{\textbf{#1}}%
   }%
-}
+}%
 \DeclareUrlCommand\urldirectory{\urlstyle{tt}}
 \ExplSyntaxOn
 \tl_const:Nn \c__denisbdoc_examples_path_tl {../exemples}
@@ -318,7 +360,7 @@
 \lstdefinelanguage[extLaTeX]{TeX}[LaTeX]{TeX}{%
   moretexcs={%
     footnotesize,huge,Huge,large,Large,LARGE,large,Large,scriptsize,tiny,%
-    includegraphics,cite,ttwplink,vref,LTXtable,tableofcontents,frontmatter,mainmatter,%
+    includegraphics,cite,ttwplink,cref,vref,LTXtable,tableofcontents,frontmatter,mainmatter,%
     part,chapter,section,subsection,subsubsection,paragraph,subparagraph,RequirePackage,%
     listoftables,listoffigures,lstlistingname,si,SI,ohm,num,space,shorthandon,shorthandoff,%
     abstractname,appendixname,contentsname,listfigurename,listtablename,indexname,%
@@ -328,7 +370,7 @@
     @pnumwidth,bookmarksetup,DeclareTextCommand,text,iiint,NewPairedDelimiter,%
     norm,lnorm,llnorm,lpnorm,supnorm,abs,prt,brk,brc,lrangle,leqgeq,%
     norm*,lnorm*,llnorm*,lpnorm*,supnorm*,abs*,prt*,brk*,brc*,lrangle*,leqgeq*,%
-    pdfobjcompresslevel,chaptermark%
+    pdfobjcompresslevel,chaptermark,PassOptionsToClass%
   },%
   morekeywords={[1]% Environments' names
     tabular,tabulary,math,document,minipage,eqnarray,eqnarray*,align,align*,%
@@ -365,7 +407,7 @@
     user1,user2,user3,user4,user5,user6,hyper,style,xindy,toc,title,%
     useri,userii,useriii,useriv,userv,uservi%
   },%
-  % Mots-clés de niveau 3 : arguments optionnels valeurs de clés dans clé=valeur
+  % Mots-clés de niveau 3 : arguments optionnels clés dans clé=valeur
   morekeywords=[3]{%
     listgroup,listhypergroup,%
     % textrm,textit,textsf,textsl,texttt,textup,textbf,textsc,textmd,emph,%
@@ -476,7 +518,7 @@
 {%
   % Séquences de contrôles (communément appelées commandes ou macros)
   moretexcs={%
-    enquote,textelp,textins,blockcquote%
+    enquote,textelp,textins,blockcquote,SetCiteCommand%
   },%
   % Mots-clés de niveau 1 : arguments optionnels
   morekeywords={%
@@ -485,9 +527,37 @@
   morekeywords=[2]{%
     % title,
   },%
-  % Mots-clés de niveau 3 : arguments optionnels valeurs de clés dans clé=valeur
+  % Mots-clés de niveau 3 : arguments optionnels clés dans clé=valeur
   morekeywords=[3]{%
     skipbib%
+  },%
+  % Mots-clés de niveau 4 : arguments optionnels valeurs de clés dans clé=valeur
+  morekeywords=[4]{%
+  },%
+  sensitive%
+}[keywords,tex,comments]%
+\lstdefinelanguage[colophon]{TeX}[LaTeX]{TeX}%
+{%
+  % Séquences de contrôles (communément appelées commandes ou macros)
+  moretexcs={%
+    colophontitle,colophontitlestyle,colophontitlesize,colophonmidspace,%
+    colophonpagestyle,colophontitlealign,colophonpretitlehook,colophonposttitlehook,%
+    colophonparstyle,colophonparsize,colophonparlead,colophonnofirstindent,colophonpreparhook,%
+    colophonpostparhook,colophonparalign,colophonnofullpage,colophonnoclrdblpg,colophonclrpg,%
+    colophontopspace,colophonbotspace%
+  },%
+  % Mots-clés de niveau 1 : arguments optionnels
+  morekeywords={%
+  },%
+  % Mots-clés de niveau 2 : arguments obligatoires et environnements
+  morekeywords=[2]{%
+    colophon,
+  },%
+  % Mots-clés de niveau 3 : arguments optionnels clés dans clé=valeur
+  morekeywords=[3]{%
+    titlestyle,titlesize,aftertitle,pagestyle,titlealign,%
+    parstyle,parsize,parlead,nofirstindent,nofullpage,noclrdblpg,%
+    clrpg,topspace,botspace%
   },%
   % Mots-clés de niveau 4 : arguments optionnels valeurs de clés dans clé=valeur
   morekeywords=[4]{%
@@ -507,7 +577,7 @@
   morekeywords=[2]{%
     colback,beamer,skins,listing,only,options,and,text%
   },%
-  % Mots-clés de niveau 3 : arguments optionnels valeurs de clés dans clé=valeur
+  % Mots-clés de niveau 3 : arguments optionnels clés dans clé=valeur
   morekeywords=[3]{%
     lightgray,red!50!white%
   },%
@@ -554,7 +624,7 @@
   morekeywords=[2]{%
     lightgray,red,blue,brown,purple,magenta,green,black,cyan,yellow,%
   },%
-  % Mots-clés de niveau 3 : arguments optionnels valeurs de clés dans clé=valeur
+  % Mots-clés de niveau 3 : arguments optionnels clés dans clé=valeur
   morekeywords=[3]{%
     %
   },%
@@ -572,7 +642,12 @@
   },%
   % Mots-clés de niveau 2 : arguments obligatoires et environnements
   morekeywords=[2]{%
-    breaklinks,colorlinks,bookmarks,pdfborderstyle,pdfborder,all%
+    breaklinks,colorlinks,bookmarks,pdfborderstyle,pdfborder,all,pdfencoding,final,%
+    hidelinks,linktoc,%
+  },%
+  % Mots-clés de niveau 3 : arguments optionnels clés dans clé=valeur
+  morekeywords=[3]{%
+    unicode%
   },%
   sensitive%
 }[keywords,tex,comments]%
@@ -583,7 +658,7 @@
     laboratory,dedication,frontepigraph,keywords,subject,expression,tableofcontents,submissiondate,%
     maketitle,makedisclaimer,makekeywords,makelaboratory,makeabstract,makededications,%
     makefrontepigraphs,makebackcover,ordernumber,chapter*,disclaimer,newglssymbol,yadsetup,%
-    comue,%
+    comue,newcorporation,NoCaseChange%
     % acknowledgements,frenchabstract,foreword,preface,caution,
   },%
   % Environments' names
@@ -602,7 +677,7 @@
     address,telephone,fax,email,type,acronym,heading,nowarning,noerror,nofrontcover,role,%
     hyperfootnotes,hyperindex,plainpages,pdfpagemode,pdfpagelayout,locale,gray,frametitle,%
     graphicx,adjustbox,setspace,xcolor,datatool,titleps,draftwatermark,babel,datetime,%
-    bookmark,fncychap,localtocs,localbibs,localbibs*%
+    bookmark,fncychap,localtocs,localtocs/depth,localbibs,localbibs*%
   },%
   morekeywords=[3]{% Values of key-value lists
     single,onehalf,double,doctor,yadsymbolstyle,%
@@ -626,13 +701,13 @@
     comonitor*,supervisor,supervisor*,academicfield,doctoralschool,keywords,%
     ordernumber,committeepresident,committeepresident*,speciality%
   },%
-  alsoletter={!-*1234560}%
+  alsoletter={!-*1234560/}%
 }%
 \lstdefinelanguage[gzt]{TeX}[LaTeX]{TeX}{%
   moretexcs={% Control sequences' names
     editorinchief,editor,president,classdesigner,classmaintainer,fontdesigner,%
     graphicdesigner,issuesetup,journalsetup,interviewee,academicsignature,%
-    subtitle,editorial,gzttableofcontents,minitoc,presidentmessage,%
+    subtitle,editorial,gzttableofcontents,gztlocaltableofcontents,minitoc,presidentmessage,%
     acknowledgements,printminibios,aboutfrontcover,rubric,mathematics,%
     dossier,community,interview,teaching,parity,tellme,information,%
     rearviewmirror,tribute,books,email,question,smf,cad,Cad,gzt,%
@@ -680,7 +755,8 @@
     vec,surname,usetikzlibrary,arccos,arcsin,arctan,log,lg,le,leq,ge,geq,set,%
     nwejmverb,th,epigraph,keywords,msc,acknowledgments,E,I,grad,Div,curl,rot,supp,%
     DeclareMathOperator,BinaryOperators,dif,articlesetup,%
-    bbN,bbZ,bbD,bbQ,bbR,bbC,bbK%
+    bbN,bbZ,bbD,bbQ,bbR,bbC,bbK,%
+    newenumeration%
   },%
   % Mandatory arguments (other than environments' names)
   morekeywords={%
@@ -700,7 +776,7 @@
     abstract,frenchtitle,englishtitle,% title,label,%
     pictogram,list,help,diameter,textwidth,xshift,yshift,%
     affiliation,affiliationtagged,email,minibio,photo,webpage,frontcover,bibkey,copyright,%
-    gradient,title/french,style%
+    gradient,title/french,style,title,title-plural,singular,plural,label%
   },%
   morekeywords=[3]{% Values of key-value lists
     true,false,theorem,definition,proof%
@@ -709,6 +785,25 @@
     pagegrid,forprinter,cover,forauthors,%
   },%
   alsoletter={!-*1234560/}%
+}%
+\lstdefinelanguage[studentreport]{TeX}[LaTeX]{TeX}{%
+  moretexcs={% Control sequences' names
+    reportsetup,daterange,professionaladvisor,academicadvisor,companylogo%
+  },%
+  % Mandatory arguments (other than environments' names)
+  morekeywords={%
+  },%
+  morekeywords=[1]{% Environments' names
+  },%
+  morekeywords=[2]{% Keys of key-value lists
+    institute,subinstitute,subsubinstitute,year,10pt,11pt,12pt,internship,project,layout,%
+    strings,pretitle,company,advisor,advisors,before~start~date,before~end~date,date,%
+    logos,logosheights,,%
+  },%
+  morekeywords=[3]{% Values of key-value lists
+    ulco,iutlco,gte,gim,%
+  },%
+  alsoletter={!-*1234560}%
 }%
 \lstdefinelanguage{bash}[]{sh}%
 {%
@@ -727,28 +822,29 @@
   \ttfamily%
   \DeclareFontShape{T1}{lmtt}{bx}{it}{<-> ssub * lmtt/b/sl}{}%
 }
-\xapptocmd{\@chapter}{%
-  \addtocontents{dbwarninglist}{\protect\addvspace{10\p@}}%
-  \addtocontents{dbremarklist}{\protect\addvspace{10\p@}}%
-  \addtocontents{dbexamplelist}{\protect\addvspace{10\p@}}%
-  \addtocontents{dbfaqlist}{\protect\addvspace{10\p@}}%
-  \addtocontents{dbtablist}{\protect\addvspace{10\p@}}%
-}{}{}
+\if@DBD@beamer@not@loaded@
+\ifcsdef{@chapter}{
+  \xapptocmd{\@chapter}{%
+    \addtocontents{dbwarninglist}{\protect\addvspace{10\p@}}%
+    \addtocontents{dbremarklist}{\protect\addvspace{10\p@}}%
+    \addtocontents{dbexamplelist}{\protect\addvspace{10\p@}}%
+    \addtocontents{dbfaqlist}{\protect\addvspace{10\p@}}%
+    \addtocontents{dbtablist}{\protect\addvspace{10\p@}}%
+  }{}{}
+}{}
+\fi%
 \sisetup{locale=FR,detect-all}
-\lstdefinestyle{dbtex}{%
+\lstdefinestyle{pre-dbtex}{%
   escapechar=",
   language=[LaTeX]TeX,
   alsolanguage=[extLaTeX]TeX,
   % alsolanguage=[glossaries]TeX,
   % alsolanguage=[biblatex]TeX,
-  % alsolanguage=[csquotes]TeX,
+  alsolanguage=[csquotes]TeX,
   % alsolanguage=[tcolorbox]TeX,
   % alsolanguage=[listings]TeX,
   % alsolanguage=[xcolor]TeX,
   % alsolanguage=[hyperref]TeX,
-  alsolanguage=[yad]TeX,
-  alsolanguage=[gzt]TeX,
-  alsolanguage=[nwejm]TeX,
   texcsstyle=*\color{texcs},
   breaklines=true,
   basicstyle=\normalfont\ttfamily,
@@ -770,13 +866,60 @@
   aboveskip=\c__denisbdoc_listings_aboveskip_skip,
   belowskip=\c__denisbdoc_listings_belowskip_skip
 }%
+\bool_if:nT {\g__denisbdoc_yad_bool} {%
+  \lstdefinestyle{dbtex}{%
+    style=pre-dbtex,%
+    alsolanguage=[yad]TeX,%
+    alsolanguage=[colophon]TeX,%
+    moretexcs={printbibliography,autocite},%
+    morekeywords=[2]{%
+      colback,refsegment%
+    },%
+    morekeywords=[2]{%
+      red,white%
+    },%
+  }%
+}
+\bool_if:nT {\g__denisbdoc_gzt_bool} {%
+  \lstdefinestyle{dbtex}{%
+    style=pre-dbtex,%
+    alsolanguage=[gzt]TeX,%
+  }%
+}
+\bool_if:nT {\g__denisbdoc_nwejm_bool} {%
+  \lstdefinestyle{dbtex}{%
+    style=pre-dbtex,%
+    alsolanguage=[nwejm]TeX,%
+  }%
+}
+\bool_if:nT {\g__denisbdoc_studentreport_bool} {%
+  \lstdefinestyle{dbtex}{%
+    style=pre-dbtex,%
+    alsolanguage=[studentreport]TeX,%
+  }%
+}
 \lstset{style=dbtex}
+\sys_if_engine_pdftex:TF
+{
+  \ExplSyntaxOff
+  \lstMakeShortInline[style=dbtex]|
+  \ExplSyntaxOn
+}{
+  \lstMakeShortInline[style=dbtex]×
+}
 \tcbset{dbtcb/.style={%
     breakable,
     fonttitle=\bfseries,
     enlarge~top~by=1mm,
     separator~sign~dash,
-    label~separator=-
+    label~separator=-,
+    before~title={%
+      \hypersetup{hidelinks}%
+      \tcbset{%
+        color~definition=white,
+        color~hyperlink=white,
+      }%
+    }%
   }%
 }%
 \tcbset{%
@@ -849,83 +992,89 @@ Nouv.~:}~#1}
     \index{expression!en~anglais!\enquote{\foreignlanguage{english}{\translate{#2}}}}%
   }
 }
-\expandafter\AtBeginDocument\expandafter{%
-  \expandafter\def\expandafter\theindex\expandafter{\theindex}%
-}
-\expandafter\AtBeginDocument\expandafter{%
-  \expandafter\def\expandafter\endtheindex\expandafter{\endtheindex}%
-}
-\ExplSyntaxOff
-\def\imki@finalmessage#1{}% since you're using latexmk
-\def\imki@startidx#1#2{%
-  \if@filesw
+\@ifclassloaded{beamer}{%
+}{%
+  \expandafter\AtBeginDocument\expandafter{%
+    \expandafter\def\expandafter\theindex\expandafter{\theindex}%
+  }
+  \expandafter\AtBeginDocument\expandafter{%
+    \expandafter\def\expandafter\endtheindex\expandafter{\endtheindex}%
+  }
+  \ExplSyntaxOff
+  \def\imki@finalmessage#1{}% since you're using latexmk
+  \def\imki@startidx#1#2{%
+    \if@filesw
     \def\index{\@bsphack
       \@ifnextchar [{\@index}{\@index[\imki@jobname]}}
     \expandafter\newwrite\csname #1@idxfile\endcsname
     \immediate\openout \csname #1@idxfile\endcsname #1.#2\relax
     \typeout{Writing index file #1.#2}%
-  \fi}
-\xpatchcmd\imki@makeindex
+    \fi}
+  \xpatchcmd\imki@makeindex
   {\imki@startidx\imki@name}
   {\imki@startidx\imki@name\imki@extout}
   {}{}
-\xpatchcmd\imki@build
+  \xpatchcmd\imki@build
   {\imki@dokey\imki@title}
   {\imki@dokey\imki@title
-   \imki@dokey\imki@extin
-   \imki@dokey\imki@extout}
+    \imki@dokey\imki@extin
+    \imki@dokey\imki@extout}
   {}{}
-\xpatchcmd{\imki@putindex}
+  \xpatchcmd{\imki@putindex}
   {\imki@options}
   {\c_space_tl~ -o~ #1.\imki@extin\imki@options}
   {}{}
-\xpatchcmd{\imki@putindex}
+  \xpatchcmd{\imki@putindex}
   {.idx}
   {.\imki@extout}
   {}{}
-\xpatchcmd{\imki@putindex}
+  \xpatchcmd{\imki@putindex}
   {.ind}
   {.\imki@extin}
   {}{}
-\def\imki@extout{idx}\def\imki@extin{ind}
-\define@key{imki}{extout}{\def\imki@extout{#1}}
-\define@key{imki}{extin}{\def\imki@extin{#1}}
+  \def\imki@extout{idx}\def\imki@extin{ind}
+  \define@key{imki}{extout}{\def\imki@extout{#1}}
+  \define@key{imki}{extin}{\def\imki@extin{#1}}
+}%
 \ExplSyntaxOn
-\cs_new_protected:Nn \__denisbdoc_alert:n
-{
-  \begingroup
-  \color{red}
-  #1
-  \endgroup
-}%
-\NewDocumentCommand \alert {m}
-{
-  \__denisbdoc_alert:n {#1}
-}%
-\DeclareDocumentCommand \changes { smmm } {
-  \IfBooleanTF {#1}
+\@ifclassloaded{beamer}{%
+}{%
+  \cs_new_protected:Nn \__denisbdoc_alert:n
   {
-    \tl_set:Nn \l_tmpa_tl {\alert{#4}}
-  }{
-    \tl_set:Nn \l_tmpa_tl {#4}
+    \begingroup
+    \color{red}
+    #1
+    \endgroup
+  }%
+  \NewDocumentCommand \alert {m}
+  {
+    \__denisbdoc_alert:n {#1}
+  }%
+  \DeclareDocumentCommand \changes { smmm } {
+    \IfBooleanTF {#1}
+    {
+      \tl_set:Nn \l_tmpa_tl {\alert{#4}}
+    }{
+      \tl_set:Nn \l_tmpa_tl {#4}
+    }
+    \ifx\@onlypreamble\@notprerr
+    \index[\jobname-changes]{\texttt{#2}~(#3)!\l_tmpa_tl}
+    \else
+    \index[\jobname-changes]{\texttt{#2}~(#3)!\emph{Globalement}!\l_tmpa_tl|gobble}
+    \fi
   }
-  \ifx\@onlypreamble\@notprerr
-  \index[\jobname-changes]{\texttt{#2}~(#3)!\l_tmpa_tl}
-  \else
-  \index[\jobname-changes]{\texttt{#2}~(#3)!\emph{Globalement}!\l_tmpa_tl|gobble}
-  \fi
-}
-\DeclareDocumentCommand \PrintChanges { O{} } {
-  \indexprologue{#1}
-  \def\imki@indexlevel{\chapter}
-  \printindex[\jobname-changes]
-  \def\imki@indexlevel{\chapter*}
-}
+  \DeclareDocumentCommand \PrintChanges { !O{} } {
+    \indexprologue{#1}
+    \def\imki@indexlevel{\chapter}
+    \printindex[\jobname-changes]
+    \def\imki@indexlevel{\chapter*}
+  }
+}%
 \IfLanguageName{french}{%
   \DeclarePlainStyle{«~}{~»}%
                     {“}{”}
 }{}%
-\tl_const:Nx \c__denisbdoc_standard_url_tl { \tl_to_str:n { http://www.ctan.org/pkg/ } }
+\tl_const:Nx \c__denisbdoc_standard_url_tl { \tl_to_str:n { http://ctan.org/pkg/ } }
 \cs_new_protected:Npn \__denisbdoc_package_format:nn #1#2
 {
   #2{\sffamily#1}
@@ -962,15 +1111,15 @@ Nouv.~:}~#1}
   }
   {#4}
 }
-\NewDocumentCommand{\package}{ s t+ O{} m O{package} O{} O{} } {
+\NewDocumentCommand{\package}{ s t+ O{} m !O{package} !O{} !O{} } {
   \__denisbdoc_package:nnnnnnn {#1}{#2}{#3}{#4}{package}{#6}{#7}
 }
-\NewDocumentCommand{\Package}{ s t+ O{} m O{package} O{} O{} } {
+\NewDocumentCommand{\Package}{ s t+ O{} m !O{package} !O{} !O{} } {
   \IfLanguageName{french}{package~}{}%
   \__denisbdoc_package:nnnnnnn {#1}{#2}{#3}{#4}{package}{#6}{#7}
   \IfLanguageName{english}{~package}{}%
 }
-\NewDocumentCommand{\class}{ s t+ O{} m O{} O{} O{} } {
+\NewDocumentCommand{\class}{ s t+ O{} m !O{} !O{} !O{} } {
   \IfLanguageName{french}{%
     \__denisbdoc_package:nnnnnnn {#1}{#2}{#3}{#4}{classe}{#6}{#7}
   }{}%
@@ -978,7 +1127,7 @@ Nouv.~:}~#1}
     \__denisbdoc_package:nnnnnnn {#1}{#2}{#3}{#4}{class}{#6}{#7}
   }{}%
 }
-\NewDocumentCommand{\Class}{ s t+ O{} m O{} O{} O{} } {
+\NewDocumentCommand{\Class}{ s t+ O{} m !O{} !O{} !O{} } {
   \IfLanguageName{french}{%
     classe~%
     \__denisbdoc_package:nnnnnnn {#1}{#2}{#3}{#4}{classe}{#6}{#7}
@@ -1024,7 +1173,7 @@ Nouv.~:}~#1}
 }
 \NewDocumentCommand{\Folder}{ m }
 {%
-  \IfLanguageName{french}{répertoire~}{}%
+  \IfLanguageName{french}{dossier~}{}%
   \__denisbdoc_file:n {#1}%
   \IfLanguageName{english}{~directory}{}%
 }%
@@ -1149,9 +1298,17 @@ Nouv.~:}~#1}
     \fi%
   }%
 }
-\NewDocumentCommand{\mandatory}{  }
+\cs_new_protected:Nn \__denisbdoc_mandatory_no_link:
 {
-  \__denisbdoc_mandatory: {}
+  \textcolor{red!75!black}{
+    \faLock
+  }
+}
+\NewDocumentCommand{\mandatory}{ s }
+{
+  \IfBooleanTF {#1}
+  { \__denisbdoc_mandatory_no_link: {} }
+  { \__denisbdoc_mandatory: {} }
 }%
 \NewDocumentCommand{\unixtldirectory}{}
 {
@@ -1285,12 +1442,15 @@ Nouv.~:}~#1}
   }
 }
 \pdfsuppresswarningpagegroup=1
+\newunicodechar{〈}{$\langle$}
+\newunicodechar{〉}{$\rangle$}
 \cs_new_protected:Nn \__denisbdoc_meta:nn
 {
     \bgroup%
     \normalfont
     \ttfamily%
-    \textcolor{#1}{$\langle$\emph{#2}$\rangle$}%
+    \itshape%
+    \textcolor{#1}{$\langle$#2$\rangle$}%
     \egroup%
 }
 \AtBeginDocument{%
@@ -1298,12 +1458,12 @@ Nouv.~:}~#1}
     \__denisbdoc_meta:nn {#1}{#2}
   }
 }%
-\NewTCBListing{preamblecode}{ O{} }{%
+\NewTCBListing{preamblecode}{ !O{} }{%
   codes,%
   drop~lifted~shadow,
   #1%
 }
-\NewTCBListing{bodycode}{ O{} }{%
+\NewTCBListing{bodycode}{ !O{} }{%
   codes,%
   #1%
 }
@@ -1334,9 +1494,14 @@ Nouv.~:}~#1}
   #3,
 }%
 \tl_new:N \g__denisbdoc_number_within_tl
-\tl_set:Nn \g__denisbdoc_number_within_tl {chapter}
+\ifcsdef{chapter}{
+  \tl_set:Nn \g__denisbdoc_number_within_tl {chapter}
+}{
+  \tl_set:Nn \g__denisbdoc_number_within_tl {section}
+}
 \@ifclassloaded{gztarticle}{\tl_set:Nn \g__denisbdoc_number_within_tl {section}}{}%
 \@ifclassloaded{nwejmart}{\tl_set:Nn \g__denisbdoc_number_within_tl {section}}{}%
+\@ifclassloaded{beamer}{\tl_set:Nn \g__denisbdoc_number_within_tl {section}}{}%
 \newtcbtheorem[list~inside=dbwarninglist,number~within=\g__denisbdoc_number_within_tl,crefname={avertissement}{avertissements}]{dbwarning}{Avertissement}{%
   colback=red!5!white,
   colframe=red!75!black,
@@ -1399,7 +1564,7 @@ Nouv.~:}~#1}
   {
    menufont = \sffamily ,
    menusep  = ${}\to{}$
- }%    \end{macrocode}
+ }
 \menuentryset{inputsep=>}
 \tl_const:Nn \c__denisbdoc_yat_class_name_tl {yathesis}
 \tl_const:Nn \c__denisbdoc_configuration_directory_string_tl {configuration}
@@ -1512,8 +1677,8 @@ Nouv.~:}~#1}
   \def\program#1{#1}
 }
 \ExplSyntaxOff
-%% Copyright (C) 2015, 2016, 2017 by
-%%   Denis Bitouz'e <denis.bitouze@lmpa.univ-littoral.fr>
+%% Copyright (C) 2015-2020 by
+%%   Denis Bitouzé <denis.bitouze@univ-littoral.fr>
 %% 
 %% It may be distributed and/or modified under the conditions of
 %% the LaTeX Project Public License (LPPL), either version 1.3c of
@@ -1522,7 +1687,7 @@ Nouv.~:}~#1}
 %%    http://www.latex-project.org/lppl.txt
 %% 
 %% This work is "maintained" (as per LPPL maintenance status) by
-%%   Denis Bitouz'e.
+%%   Denis Bitouzé.
 %% 
 %% This work consists of the file  denisbdoc.dtx
 %%                                 denisbdoc.sty and
