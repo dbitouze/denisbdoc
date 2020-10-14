@@ -41,9 +41,10 @@
 \PassOptionsToPackage{obeyspaces}{url}
 \sys_if_engine_pdftex:TF
 {
-  \RequirePackage{cmap}
+  % \RequirePackage{cmap}
   \RequirePackage[T1]{fontenc}
   \RequirePackage[utf8]{inputenc}
+  \pdfsuppresswarningpagegroup=1
 }{
   \RequirePackage{fontspec}
 }
@@ -158,7 +159,6 @@
 }%
 \@ifpackageloaded{glossaries}{%
 }{%
-  % \RequirePackage{glossaries}%
   \RequirePackage[xindy,hyperfirst=false,toc=false]{glossaries-extra}%
   \makeglossaries%
   \newglossaryentry{zip}{%
@@ -171,7 +171,7 @@
     text={zip}%
   }%
   \setglossarystyle{indexhypergroup}%
-  \setabbreviationstyle[acronym]{long-short-sc}%
+  \setabbreviationstyle{long-short-sc}%
   \newcommand*{\formatfont}[1]{\textsc{#1}}%
   \glssetcategoryattribute{format}{glossnamefont}{formatfont}%
   \glssetcategoryattribute{format}{font}{formatfont}%
@@ -201,7 +201,10 @@
     \HDorg@wrglossary{#1\encapchar\encapchar\@nil}%
   }
 \fi%
-\renewcommand{\acrpluralsuffix}{}
+\@ifpackageloaded{glossaries-extra}{%
+  \renewcommand*{\glsxtrabbrvpluralsuffix}{}
+}{%
+}
 \ltx@iffilelater{french.ldf}{2016/03/20}{%
 }{%
   \DeclareRobustCommand*{\NoAutoSpacing}{\FBAutoSpaceGuillfalse%
@@ -296,24 +299,24 @@
   \par\bigskip
   \csuse{DBD@indexnavigation@\csuse{DBD@index@symbolic@name}}%
 }{}{\aaa}%
-  \newif\if@DBD@no@first@letter@
-  \@DBD@no@first@letter@false
 \newcommand*{\indexheading}[2]{%
   \hypertarget{#2:#1}{\textbf{#1}}%
   \protected@write\@auxout{}{\string\DBD@indexgroup{#1}{#2}}%
 }
+\newtoggle{@DBD@no@first@letter}
 \newcommand*{\DBD@indexgroup}[2]{%
   \csgappto{DBD@indexnavigation@#2}{%
-    \if@DBD@no@first@letter@
-    \,\textbar\,%
-    % \\
-    \else
-    \noindent
-    \@DBD@no@first@letter@true
-    \fi
+    \iftoggle{@DBD@no@first@letter}{%
+      \,\textbar\,%
+      % \\
+    }{%
+      \toggletrue{@DBD@no@first@letter}%
+      \noindent%
+    }%
     \hyperlink{#2:#1}{\textbf{#1}}%
   }%
 }%
+\fi
 \DeclareUrlCommand\urldirectory{\urlstyle{tt}}
 \ExplSyntaxOn
 \tl_const:Nn \c__denisbdoc_examples_path_tl {../exemples}
@@ -568,7 +571,7 @@
 {%
   % Séquences de contrôles (communément appelées commandes ou macros)
   moretexcs={%
-    tcbset,tcbuselibrary%
+    tcbset,tcbuselibrary,tcbsetforeverylayer%
   },%
   % Mots-clés de niveau 1 : arguments optionnels
   morekeywords={%
@@ -579,8 +582,9 @@
   },%
   % Mots-clés de niveau 3 : arguments optionnels clés dans clé=valeur
   morekeywords=[3]{%
-    lightgray,red!50!white%
+    lightgray,red!50!white,autoparskip,beforeafter,skip,balanced%
   },%
+  alsoletter={ \ },%
   sensitive,%
 }[keywords,tex,comments]%
 \lstdefinelanguage[listings]{TeX}[LaTeX]{TeX}%
@@ -788,7 +792,7 @@
 }%
 \lstdefinelanguage[studentreport]{TeX}[LaTeX]{TeX}{%
   moretexcs={% Control sequences' names
-    reportsetup,daterange,professionaladvisor,academicadvisor,companylogo%
+    reportsetup,daterange,companytutor,academictutor,companylogo%
   },%
   % Mandatory arguments (other than environments' names)
   morekeywords={%
@@ -797,11 +801,11 @@
   },%
   morekeywords=[2]{% Keys of key-value lists
     institute,subinstitute,subsubinstitute,year,10pt,11pt,12pt,internship,project,layout,%
-    strings,pretitle,company,advisor,advisors,before~start~date,before~end~date,date,%
-    logos,logosheights,,%
+    strings,pretitle,company,tutor,tutors,before~start~date,before~end~date,date,%
+    logos,logosheights,keywords,subject,%
   },%
   morekeywords=[3]{% Values of key-value lists
-    ulco,iutlco,gte,gim,%
+    ulco,iutlco,gtelco,gimlco,%
   },%
   alsoletter={!-*1234560}%
 }%
@@ -834,147 +838,6 @@
 }{}
 \fi%
 \sisetup{locale=FR,detect-all}
-\lstdefinestyle{pre-dbtex}{%
-  escapechar=",
-  language=[LaTeX]TeX,
-  alsolanguage=[extLaTeX]TeX,
-  % alsolanguage=[glossaries]TeX,
-  % alsolanguage=[biblatex]TeX,
-  alsolanguage=[csquotes]TeX,
-  % alsolanguage=[tcolorbox]TeX,
-  % alsolanguage=[listings]TeX,
-  % alsolanguage=[xcolor]TeX,
-  % alsolanguage=[hyperref]TeX,
-  texcsstyle=*\color{texcs},
-  breaklines=true,
-  basicstyle=\normalfont\ttfamily,
-  commentstyle=\color{comment}\itshape,
-  directivestyle={\color{directive}},
-  keywordstyle={\color{red}},
-  keywordstyle={[1]\color{environment}},
-  keywordstyle={[2]\color{key}},
-  keywordstyle={[3]\color{value}},
-  keywordstyle={[4]\color{keyword4}},
-  keywordstyle={[5]\color{keyword5}},
-  moredelim=*[s][\color{math}\ttfamily]{\\[}{\\]},
-  moredelim=*[s][\color{math}\ttfamily]{$}{$},
-  stringstyle=\color{string},
-  columns=flexible,
-  keepspaces,
-  numberstyle=\small,
-  inputencoding=utf8/latin1,
-  aboveskip=\c__denisbdoc_listings_aboveskip_skip,
-  belowskip=\c__denisbdoc_listings_belowskip_skip
-}%
-\bool_if:nT {\g__denisbdoc_yad_bool} {%
-  \lstdefinestyle{dbtex}{%
-    style=pre-dbtex,%
-    alsolanguage=[yad]TeX,%
-    alsolanguage=[colophon]TeX,%
-    moretexcs={printbibliography,autocite},%
-    morekeywords=[2]{%
-      colback,refsegment%
-    },%
-    morekeywords=[2]{%
-      red,white%
-    },%
-  }%
-}
-\bool_if:nT {\g__denisbdoc_gzt_bool} {%
-  \lstdefinestyle{dbtex}{%
-    style=pre-dbtex,%
-    alsolanguage=[gzt]TeX,%
-  }%
-}
-\bool_if:nT {\g__denisbdoc_nwejm_bool} {%
-  \lstdefinestyle{dbtex}{%
-    style=pre-dbtex,%
-    alsolanguage=[nwejm]TeX,%
-  }%
-}
-\bool_if:nT {\g__denisbdoc_studentreport_bool} {%
-  \lstdefinestyle{dbtex}{%
-    style=pre-dbtex,%
-    alsolanguage=[studentreport]TeX,%
-  }%
-}
-\lstset{style=dbtex}
-\sys_if_engine_pdftex:TF
-{
-  \ExplSyntaxOff
-  \lstMakeShortInline[style=dbtex]|
-  \ExplSyntaxOn
-}{
-  \lstMakeShortInline[style=dbtex]×
-}
-\tcbset{dbtcb/.style={%
-    breakable,
-    fonttitle=\bfseries,
-    enlarge~top~by=1mm,
-    separator~sign~dash,
-    label~separator=-,
-    before~title={%
-      \hypersetup{hidelinks}%
-      \tcbset{%
-        color~definition=white,
-        color~hyperlink=white,
-      }%
-    }%
-  }%
-}%
-\tcbset{%
-  doc~head={%
-    % boxsep=4pt,arc=4pt,boxrule=0.6pt,%
-    % frame~style=fill,%
-    % colframe=red!50!black,%
-    interior~style={%
-      fill,%
-      color=yellow!10!white,%
-    }%
-  }%
-}
-\tcbset{%
-  /tcb/doclang/environment~content=contenu~de~l'environnement,
-  /tcb/doclang/color=~(couleur),
-  /tcb/doclang/colors=Couleurs,
-  /tcb/doclang/environments=Environnements,
-  /tcb/doclang/keys=Clés,
-  /tcb/doclang/values=Valeurs,
-  /tcb/doclang/pageshort=p.,
-  /tcb/documentation~listing~style=dbtex,
-  /tcb/color~command=texcs,
-  /tcb/color~environment=environment,
-  /tcb/color~key=key,
-  /tcb/color~value=value,
-  % index~format=pgfchapter,
-  index~format=off,
-  index~colorize,
-  index~annotate=false,
-  enhanced,
-  listing~style=dbtex,
-  every~box/.style={documentation~listing~style=dbtex},
-  codes/.style={%
-    listing~only,
-    enlarge~top~by=\medskipamount,
-    colframe=ExampleFrame,
-    colback=ExampleBack,
-    fonttitle=\bfseries,
-    fontupper=\small,
-    split=0.5,
-    enhanced,
-    breakable,
-    listing~style=dbtex,
-  }%
-}%
-\tcbset{samples/.style={%
-    codes,
-    % listing~options={rangebeginprefix=\\,rangeendsuffix=\}}
-  }%
-}%
-\renewcommand*{\tcbdocnew}[1]{\scriptsize\sffamily\textcolor{green!50!black}{\bfseries
-Nouv.~:}~#1}
-\renewcommand*{\tcbdocupdated}[1]{\scriptsize\sffamily\textcolor{blue!75!black}{\bfseries
-\textsc{m.-à-j.}~:}~#1}
 \def\disp@com#1{\colDef{\ttfamily#1}}
 \define@key{Gin}{bylabel}{%
     \edef\@tempa{{Gin}{page=\zref@extract{#1}{abspage}}}%
@@ -1074,7 +937,7 @@ Nouv.~:}~#1}
   \DeclarePlainStyle{«~}{~»}%
                     {“}{”}
 }{}%
-\tl_const:Nx \c__denisbdoc_standard_url_tl { \tl_to_str:n { http://ctan.org/pkg/ } }
+\tl_const:Nx \c__denisbdoc_standard_url_tl { \tl_to_str:n { https://ctan.org/pkg/ } }
 \cs_new_protected:Npn \__denisbdoc_package_format:nn #1#2
 {
   #2{\sffamily#1}
@@ -1441,7 +1304,6 @@ Nouv.~:}~#1}
     \__denisbdoc_screenshot:nn {#1}{#2}
   }
 }
-\pdfsuppresswarningpagegroup=1
 \newunicodechar{〈}{$\langle$}
 \newunicodechar{〉}{$\rangle$}
 \cs_new_protected:Nn \__denisbdoc_meta:nn
@@ -1460,6 +1322,12 @@ Nouv.~:}~#1}
 }%
 \NewTCBListing{preamblecode}{ !O{} }{%
   codes,%
+  drop~lifted~shadow,
+  #1%
+}
+\NewTCBListing{preamblecode*}{ !O{} }{%
+  codes,%
+  enlarge~top~by=\c_zero_dim,
   drop~lifted~shadow,
   #1%
 }
@@ -1510,7 +1378,7 @@ Nouv.~:}~#1}
 \newtcbtheorem[list~inside=dbexamplelist,number~within=\g__denisbdoc_number_within_tl,crefname={exemple}{exemples}]{dbexample}{Exemple}{%
   colback=lime!5!white,
   colframe=lime!75!black,
-  dbtcb
+  dbtcb,
 }{ex}
 \newtcbtheorem[list~inside=dbremarklist,number~within=\g__denisbdoc_number_within_tl,crefname={remarque}{remarques}]{dbremark}{Remarque}{%
   colback=cyan!5!white,
@@ -1520,7 +1388,7 @@ Nouv.~:}~#1}
 \newtcbtheorem[list~inside=dbfaqlist,number~within=\g__denisbdoc_number_within_tl,crefname={question}{questions}]{dbfaq}{Question}{%
   colback=lightgray!5!white,
   colframe=lightgray!75!black,
-  fontupper=\itshape,
+  % fontupper=\itshape,
   dbtcb
 }{faq}
 \newtcbtheorem[list~inside=dbtabularlist,number~within=\g__denisbdoc_number_within_tl,crefname={tableau}{tableaux}]{dbtab}{Tableau}{%
@@ -1669,6 +1537,169 @@ Nouv.~:}~#1}
 \NewDocumentCommand \nwejmauthorcl { }
 {%
   \Class[\c__denisbdoc_standard_url_tl\c__denisbdoc_nwejm_class_name_tl]{\c__denisbdoc_nwejmauthor_class_name_tl}
+}
+\tl_const:Nn \c__denisbdoc_studentreport_class_name_tl {studentreport}
+\ProvideDocumentCommand \studentreportcl { }
+{%
+  \Class{\c__denisbdoc_studentreport_class_name_tl}
+}
+\NewDocumentCommand \studentreportauthor { }
+{%
+  \class[\c__denisbdoc_standard_url_tl\c__denisbdoc_studentreport_class_name_tl]{\c__denisbdoc_studentreportauthor_class_name_tl}
+}
+\NewDocumentCommand \studentreportauthorcl { }
+{%
+  \Class[\c__denisbdoc_standard_url_tl\c__denisbdoc_studentreport_class_name_tl]{\c__denisbdoc_studentreportauthor_class_name_tl}
+}
+\lstdefinestyle{pre-dbtex}{%
+  escapechar=",%"
+  language=[LaTeX]TeX,
+  alsolanguage=[extLaTeX]TeX,
+  % alsolanguage=[glossaries]TeX,
+  % alsolanguage=[biblatex]TeX,
+  alsolanguage=[csquotes]TeX,
+  % alsolanguage=[tcolorbox]TeX,
+  % alsolanguage=[listings]TeX,
+  % alsolanguage=[xcolor]TeX,
+  % alsolanguage=[hyperref]TeX,
+  texcsstyle=*\color{texcs},
+  breaklines=true,
+  basicstyle=\normalfont\ttfamily,
+  commentstyle=\color{comment}\itshape,
+  directivestyle={\color{directive}},
+  keywordstyle={\color{red}},
+  keywordstyle={[1]\color{environment}},
+  keywordstyle={[2]\color{key}},
+  keywordstyle={[3]\color{value}},
+  keywordstyle={[4]\color{keyword4}},
+  keywordstyle={[5]\color{keyword5}},
+  moredelim=*[s][\color{math}\ttfamily]{\\[}{\\]},
+  moredelim=*[s][\color{math}\ttfamily]{$}{$},
+  stringstyle=\color{string},
+  columns=flexible,
+  keepspaces,
+  numberstyle=\small,
+  inputencoding=utf8/latin1,
+  aboveskip=\c__denisbdoc_listings_aboveskip_skip,
+  belowskip=\c__denisbdoc_listings_belowskip_skip
+}%
+\tl_gclear:N \g_tmpa_tl
+\bool_if:nT {\g__denisbdoc_yad_bool} {%
+  \lstdefinestyle{dbtex}{%
+    style=pre-dbtex,%
+    alsolanguage=[yad]TeX,%
+    alsolanguage=[colophon]TeX,%
+    moretexcs={printbibliography,autocite},%
+    morekeywords=[2]{%
+      colback,refsegment%
+    },%
+    morekeywords=[2]{%
+      red,white%
+    },%
+  }%
+  \tl_gset:Nx \g_tmpa_tl {\c__denisbdoc_yat_class_name_tl}
+}
+\bool_if:nT {\g__denisbdoc_gzt_bool} {%
+  \lstdefinestyle{dbtex}{%
+    style=pre-dbtex,%
+    alsolanguage=[gzt]TeX,%
+  }%
+  \tl_gset:Nx \g_tmpa_tl {\c__denisbdoc_gzt_class_name_tl}
+}
+\bool_if:nT {\g__denisbdoc_nwejm_bool} {%
+  \lstdefinestyle{dbtex}{%
+    style=pre-dbtex,%
+    alsolanguage=[nwejm]TeX,%
+  }%
+  \tl_gset:Nx \g_tmpa_tl {\c__denisbdoc_nwejm_class_name_tl}
+}
+\bool_if:nT {\g__denisbdoc_studentreport_bool} {%
+  \lstdefinestyle{dbtex}{%
+    style=pre-dbtex,%
+    alsolanguage=[studentreport]TeX,%
+  }%
+  \tl_gset:Nx \g_tmpa_tl {\c__denisbdoc_studentreport_class_name_tl}
+}
+\NewDocumentCommand{\currentclass}{}{\g_tmpa_tl}
+\NewExpandableDocumentCommand{\currenturl}{}{\c__denisbdoc_standard_url_tl\g_tmpa_tl}
+\NewDocumentCommand{\thisclass}{}{\class{\g_tmpa_tl}}
+\NewDocumentCommand{\Thisclass}{}{\Class{\g_tmpa_tl}}
+\tcbset{dbtcb/.style={%
+    breakable,
+    fonttitle=\bfseries,
+    enlarge~top~by=1mm,
+    separator~sign~dash,
+    label~separator=-,
+    before~title={%
+      \hypersetup{hidelinks}%
+      \tcbset{%
+        color~definition=white,
+        color~hyperlink=white,
+      }%
+    }%
+  }%
+}%
+\tcbset{%
+  doc~head={%
+    % boxsep=4pt,arc=4pt,boxrule=0.6pt,%
+    % frame~style=fill,%
+    % colframe=red!50!black,%
+    interior~style={%
+      fill,%
+      color=yellow!10!white,%
+    }%
+  }%
+}
+\tcbset{%
+  /tcb/doclang/environment~content=contenu~de~l'environnement,
+  /tcb/doclang/color=~(couleur),
+  /tcb/doclang/colors=Couleurs,
+  /tcb/doclang/environments=Environnements,
+  /tcb/doclang/keys=Clés,
+  /tcb/doclang/values=Valeurs,
+  /tcb/doclang/pageshort=p.,
+  /tcb/documentation~listing~style=dbtex,
+  /tcb/color~command=texcs,
+  /tcb/color~environment=environment,
+  /tcb/color~key=key,
+  /tcb/color~value=value,
+  % index~format=pgfchapter,
+  index~format=off,
+  index~colorize,
+  index~annotate=false,
+  enhanced,
+  listing~style=dbtex,
+  every~box/.style={documentation~listing~style=dbtex},
+  codes/.style={%
+    listing~only,
+    enlarge~top~by=\medskipamount,
+    colframe=ExampleFrame,
+    colback=ExampleBack,
+    fonttitle=\bfseries,
+    fontupper=\small,
+    split=0.5,
+    enhanced,
+    breakable,
+    listing~style=dbtex,
+  }%
+}%
+\tcbset{samples/.style={%
+    codes,
+    % listing~options={rangebeginprefix=\\,rangeendsuffix=\}}
+  }%
+}%
+\renewcommand*{\tcbdocnew}[1]{\scriptsize\sffamily\textcolor{green!50!black}{\bfseries
+Nouv.~:}~#1}
+\renewcommand*{\tcbdocupdated}[1]{\scriptsize\sffamily\textcolor{blue!75!black}{\bfseries
+\textsc{m.-à-j.}~:}~#1}
+\lstset{style=dbtex}
+\sys_if_engine_pdftex:TF
+{
+  \ExplSyntaxOff
+  \lstMakeShortInline[style=dbtex]|
+  \ExplSyntaxOn
+}{
+  \lstMakeShortInline[style=dbtex]×
 }
 \pdfstringdefDisableCommands{%
   \let\textcolor\@gobble
