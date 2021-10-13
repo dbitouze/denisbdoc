@@ -1,5 +1,5 @@
-denisbdoc - A personal package for documenting classes and packages, v. 0.9
-===========================================================================
+denisbdoc - A personal package for documenting classes and packages, v. 0.9.2
+=============================================================================
 
 **The sole purpose of this (quick 'n dirty) `denisbdoc` package is for
 documenting the classes written by their author (Denis Bitouzé).**
