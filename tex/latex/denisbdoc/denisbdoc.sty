@@ -7,7 +7,7 @@
 %% denisbdoc.dtx  (with options: `package')
 %% -----------------------------------------------------------------------------
 %% denisbdoc --- A personal dirty package for documenting personal classes,
-%%               version 0.9.1
+%%               version 0.9.2
 %% 
 %% Maintained by Denis Bitouzé
 %% E-mail: denis.bitouze@univ-littoral.fr
@@ -16,7 +16,7 @@
 %% -----------------------------------------------------------------------------
 %% 
 \RequirePackage{expl3,l3keys2e,xparse}
-\ProvidesExplPackage {denisbdoc} {2020/10/14} {0.9.1}
+\ProvidesExplPackage {denisbdoc} {2021-10-13} {0.9.2}
   {A personal package for documenting packages}
 \@ifpackagelater { expl3 } { 2012/11/21 }
   { }
@@ -89,7 +89,7 @@
 \RequirePackage{etoolbox}%
 \RequirePackage{iflang}%
 \RequirePackage{ifpdf}%
-\sys_if_engine_pdftex:TF
+\sys_if_engine_pdftex:T
 {
   \RequirePackage{amssymb}%
 }
