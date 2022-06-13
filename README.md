@@ -1,4 +1,4 @@
-denisbdoc - A personal package for documenting classes and packages, v. 0.9.2
+denisbdoc - A personal package for documenting classes and packages, v. 0.9.4
 =============================================================================
 
 **The sole purpose of this (quick 'n dirty) `denisbdoc` package is for
