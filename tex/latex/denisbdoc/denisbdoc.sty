@@ -1173,37 +1173,63 @@
 {%
   \__denisbdoc_subdirectory_filetree: {}
 }
-\cs_new_protected:Nn \__denisbdoc_mandatory:
-{
-  \hyperref[sec-comm-oblig]{%
-    \textcolor{red!75!black}{
-      % \sys_if_engine_pdftex:TF
-      % {
-      %   % \string!
-      %   \ding{52}
-      % }{
-        \faLock
-        % \ding{52}
-      % }%
+\AddToHook{begindocument/end}{%
+  \cs_new_protected:Nn \__denisbdoc_arrow:
+  {
+    {\fontfamily{pzd}\fontencoding{U}\fontseries{m}\fontshape{n}\selectfont\char213}
+  }
+  \ltx@ifpackageloaded{realscripts}{%
+    \@ifundefined{up}{
+      \cs_new_protected:Npn \__denisbdoc_deal_with_superiors:n #1
+      {
+        \fakesuperscript{#1}
+      }
+    }{
+      \cs_new_protected:Npn \__denisbdoc_deal_with_superiors:n #1
+      {
+        \up*{#1}
+      }
     }
-    \ifnum\getpagerefnumber{sec-comm-oblig}=\thepage%
-    \else%
-    \textsuperscript{\ding{213}\,\kvtcb@text@pageshort\,\pageref*{sec-comm-oblig}}%
-    \fi%
+  }{
+    \cs_new_protected:Npn \__denisbdoc_deal_with_superiors:n #1
+    {
+      \textsuperscript{#1}
+    }
+  }
+  \cs_new_protected:Nn \__denisbdoc_mandatory:
+  {
+    \hyperref[sec-comm-oblig]{%
+      \textcolor{red!75!black}{
+        \faLock
+      }
+      \ifnum\getpagerefnumber{sec-comm-oblig}=\thepage%
+      \else%
+        \__denisbdoc_deal_with_superiors:n{\__denisbdoc_arrow:{}\,\kvtcb@text@pageshort\,\pageref*{sec-comm-oblig}}%
+      \fi%
+    }%
+  }
+  \RenewDocumentCommand\tcb@ref@doc{msm}{%
+    \hyperref[#1:#3]{\texttt{\ref*{#1:#3}}%
+      \IfBooleanTF{#2}{}{%
+        \ifnum\getpagerefnumber{#1:#3}=\thepage\relax%
+        \else%
+          \__denisbdoc_deal_with_superiors:n{\__denisbdoc_arrow:{}%
+            \,\kvtcb@text@pageshort\,\pageref*{#1:#3}}%
+        \fi}}%
+  }
+  \cs_new_protected:Nn \__denisbdoc_mandatory_no_link:
+  {
+    \textcolor{red!75!black}{
+      \faLock
+    }
+  }
+  \NewDocumentCommand{\mandatory}{ s }
+  {
+    \IfBooleanTF {#1}
+    { \__denisbdoc_mandatory_no_link: {} }
+    { \__denisbdoc_mandatory: {} }
   }%
 }
-\cs_new_protected:Nn \__denisbdoc_mandatory_no_link:
-{
-  \textcolor{red!75!black}{
-    \faLock
-  }
-}
-\NewDocumentCommand{\mandatory}{ s }
-{
-  \IfBooleanTF {#1}
-  { \__denisbdoc_mandatory_no_link: {} }
-  { \__denisbdoc_mandatory: {} }
-}%
 \NewDocumentCommand{\unixtldirectory}{}
 {
   \directorytree{\c__denisbdoc_unixtldirectory_string_tl}
